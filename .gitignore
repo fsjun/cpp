@@ -1,0 +1,11 @@
+/.vs
+/.idea
+/.cache
+/build
+/.vscode
+/cmake-build-debug
+/GPATH
+/GRTAGS
+/GSYMS
+/GTAGS
+/out

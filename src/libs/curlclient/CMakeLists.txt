@@ -1,0 +1,13 @@
+
+if(enable_curlclient)
+set(MODULE_NAME curlclient)
+file(GLOB_RECURSE SRC_LIST curlclient/*.h curlclient/*.cpp)
+#add_library(${MODULE_NAME} SHARED ${SRC_LIST})
+add_library(${MODULE_NAME} ${SRC_LIST})
+if(WIN32)
+TARGET_LINK_LIBRARIES(${MODULE_NAME} libcurl_a crypt32 Ws2_32 Wldap32 Normaliz)
+else()
+TARGET_LINK_LIBRARIES(${MODULE_NAME} curl)
+endif()
+INSTALL(TARGETS ${MODULE_NAME} LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+endif()

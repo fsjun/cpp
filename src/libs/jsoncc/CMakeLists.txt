@@ -1,0 +1,11 @@
+
+if(enable_jsoncc)
+
+set(MODULE_NAME jsoncc)
+file(GLOB_RECURSE SRC_LIST *.h *.cpp)
+#add_library(${MODULE_NAME} SHARED ${SRC_LIST})
+add_library(${MODULE_NAME} ${SRC_LIST})
+TARGET_LINK_LIBRARIES(${MODULE_NAME} jsoncpp)
+INSTALL(TARGETS ${MODULE_NAME} LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+
+endif()

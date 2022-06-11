@@ -1,0 +1,13 @@
+
+if(enable_amqp)
+set(MODULE_NAME amqp)
+file(GLOB_RECURSE SRC_LIST amqp/*.h amqp/*.cpp)
+#add_library(${MODULE_NAME} SHARED ${SRC_LIST})
+add_library(${MODULE_NAME} ${SRC_LIST})
+if(WIN32)
+TARGET_LINK_LIBRARIES(${MODULE_NAME} librabbitmq.4 Ws2_32)
+else()
+TARGET_LINK_LIBRARIES(${MODULE_NAME} rabbitmq)
+endif()
+INSTALL(TARGETS ${MODULE_NAME} LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+endif()
