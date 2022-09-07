@@ -126,10 +126,17 @@ void Log::Print(LogLevel level, char* file, int line, char* format, ...)
 void Log::Print(LogLevel level, std::string fileLine, std::string fmt, ...)
 {
     va_list ap;
+#if _WIN32
+    int pos = fileLine.find_last_of("\\");
+    if (pos != std::string::npos) {
+        fileLine = fileLine.substr(pos + 1);
+    }
+#else
     int pos = fileLine.find_last_of("/");
     if (pos != std::string::npos) {
         fileLine = fileLine.substr(pos + 1);
     }
+#endif
     std::stringstream oss;
     std::lock_guard<std::mutex> l(sMtx);
     if (!sInstance) {
