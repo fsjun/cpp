@@ -13,7 +13,7 @@ std::shared_ptr<Json::Value> Jsoncc::StringToJson(string jsonstr)
     return root;
 }
 
-string Jsoncc::JsonToString(std::shared_ptr<Json::Value>& root)
+string JsonToString(std::shared_ptr<Json::Value>& root)
 {
     Json::FastWriter fast_writer;
     string value = fast_writer.write(*root);
@@ -24,7 +24,7 @@ string Jsoncc::JsonToString(std::shared_ptr<Json::Value>& root)
     return value;
 }
 
-string Jsoncc::JsonToString(Json::Value& root)
+string JsonToString(Json::Value& root)
 {
     Json::FastWriter fast_writer;
     string value = fast_writer.write(root);
@@ -34,3 +34,17 @@ string Jsoncc::JsonToString(Json::Value& root)
     }
     return value;
 }
+
+string Jsoncc::JsonToString(std::shared_ptr<Json::Value>& root)
+{
+    return JsonToString(*root);
+}
+
+string Jsoncc::JsonToString(Json::Value& root)
+{
+    Json::StreamWriterBuilder writerBuilder;
+    writerBuilder.settings_["emitUTF8"] = true;
+    string str = Json::writeString(writerBuilder, root);
+    return str;
+}
+

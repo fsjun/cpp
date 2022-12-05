@@ -14,6 +14,8 @@ public:
     void setUser(string val);
     void setPassword(string val);
 
+    int insert(std::string sql);
+    int insert(std::string sql, std::vector<std::string> params);
     int execSql(std::string sql);
     int execSql(std::string sql, std::vector<std::string> params);
     int execSql(std::string sql, std::vector<std::map<std::string, any>>& result);

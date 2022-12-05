@@ -36,6 +36,37 @@ int Database::connect()
     return ret;
 }
 
+int Database::insert(std::string sql)
+{
+    std::vector<std::string> params;
+    return insert(sql, params);
+}
+
+int Database::insert(string sql, std::vector<std::string> params)
+{
+    int id = -1;
+    lock_guard<mutex> l(mMtx);
+    int ret = connect();
+    if (ret < 0) {
+        return -1;
+    }
+    try {
+        mysqlx::SqlStatement sqlStatement = mSession->sql(sql);
+        for (auto& it : params) {
+            sqlStatement.bind(it);
+        }
+        mysqlx::SqlResult res = sqlStatement.execute();
+        id = res.getAutoIncrementValue();
+    } catch (std::exception& e) {
+        ERR("sql exception: %s\n", e.what());
+        mSession.reset();
+    } catch (...) {
+        ERR("sql exception\n");
+        mSession.reset();
+    }
+    return id;
+}
+
 int Database::execSql(std::string sql)
 {
     std::vector<std::string> params;
@@ -55,7 +86,7 @@ int Database::execSql(string sql, std::vector<std::string> params)
         for (auto& it : params) {
             sqlStatement.bind(it);
         }
-        mysqlx::RowResult res = sqlStatement.execute();
+        mysqlx::SqlResult res = sqlStatement.execute();
         count = res.getAffectedItemsCount();
     } catch (std::exception& e) {
         ERR("sql exception: %s\n", e.what());
@@ -85,7 +116,7 @@ int Database::execSql(std::string sql, std::vector<std::string> params, std::vec
         for (auto& it : params) {
             sqlStatement.bind(it);
         }
-        mysqlx::RowResult res = sqlStatement.execute();
+        mysqlx::SqlResult res = sqlStatement.execute();
         int rowCount = res.count();
         int colCount = res.getColumnCount();
         auto& columns = res.getColumns();

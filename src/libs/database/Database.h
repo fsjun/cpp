@@ -23,6 +23,8 @@ public:
     virtual ~Database();
     int connect(std::string host, int port, std::string name, std::string user, std::string password);
     int connect();
+    int insert(std::string sql);
+    int insert(std::string sql, std::vector<std::string> params);
     int execSql(std::string sql);
     int execSql(std::string sql, std::vector<std::string> params);
     int execSql(std::string sql, std::vector<std::map<std::string, any>>& result);

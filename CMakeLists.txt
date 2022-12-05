@@ -81,6 +81,10 @@ elseif(LINUX)
 SET(CMAKE_INSTALL_PREFIX "/usr/local/3rd/cpp")
 
 link_directories(/usr/lib64)
+
+include_directories(/root/app/vcpkg/installed/x64-linux/include)
+LINK_DIRECTORIES(/root/app/vcpkg/installed/x64-linux/debug/lib)
+LINK_DIRECTORIES(/root/app/vcpkg/installed/x64-linux/debug/lib/manual-link)
 include_directories("/usr/local/3rd/boost_1_72_0/include")
 LINK_DIRECTORIES(/usr/local/3rd/boost_1_72_0/lib)
 include_directories("/usr/local/3rd/opencv_4_1_2/include/opencv4")
@@ -120,6 +124,6 @@ set(enable_httpclient TRUE)
 set(enable_httpserver TRUE)
 set(enable_wsclient TRUE)
 set(enable_wsserver TRUE)
-set(enable_sipserver TRUE)
+#set(enable_sipserver TRUE)
 
 add_subdirectory(src)
