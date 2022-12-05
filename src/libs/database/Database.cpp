@@ -125,29 +125,29 @@ int Database::execSql(std::string sql, std::vector<std::string> params, std::vec
             std::map<std::string, any> po;
             for (int j = 0; j < colCount; ++j) {
                 auto column = columns[j];
-                string columnName = column.getColumnName();
+                string columnLabel = column.getColumnLabel();
                 auto col = row.get(j);
                 auto type = col.getType();
                 switch (type) {
                 case mysqlx::Value::VNULL:
                     break;
                 case mysqlx::Value::UINT64:
-                    po.emplace(columnName, col.get<uint64_t>());
+                    po.emplace(columnLabel, col.get<uint64_t>());
                     break;
                 case mysqlx::Value::INT64:
-                    po.emplace(columnName, col.get<int64_t>());
+                    po.emplace(columnLabel, col.get<int64_t>());
                     break;
                 case mysqlx::Value::FLOAT:
-                    po.emplace(columnName, col.get<float>());
+                    po.emplace(columnLabel, col.get<float>());
                     break;
                 case mysqlx::Value::DOUBLE:
-                    po.emplace(columnName, col.get<double>());
+                    po.emplace(columnLabel, col.get<double>());
                     break;
                 case mysqlx::Value::BOOL:
-                    po.emplace(columnName, col.get<bool>());
+                    po.emplace(columnLabel, col.get<bool>());
                     break;
                 case mysqlx::Value::STRING:
-                    po.emplace(columnName, col.get<string>());
+                    po.emplace(columnLabel, col.get<string>());
                     break;
                 case mysqlx::Value::DOCUMENT:
                     break;
@@ -156,7 +156,7 @@ int Database::execSql(std::string sql, std::vector<std::string> params, std::vec
                     uint8_t* data = (uint8_t*)byte.first;
                     int len = byte.second;
                     string str = decodeDateTime(data, len);
-                    po.emplace(columnName, str);
+                    po.emplace(columnLabel, str);
                     break;
                 }
                 case mysqlx::Value::ARRAY:
