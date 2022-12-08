@@ -144,6 +144,7 @@ void WsClientSslSession::on_read(beast::error_code ec, std::size_t bytes_transfe
     }
     if (ec) {
         ERR("error wss read, remote %s:%d local %s:%d msg:%s\n", mRemoteIp.c_str(), mRemotePort, mLocalIp.c_str(), mLocalPort, ec.message().c_str());
+        mCb(shared_from_this(), WS_CLIENT_ERROR, nullptr, 0);
         return;
     }
     auto data = mBuffer.data();
