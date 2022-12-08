@@ -19,20 +19,38 @@ void WsClientSession::start()
     mResolver.async_resolve(mHost, std::to_string(mRemotePort), beast::bind_front_handler(&WsClientSession::on_resolve, shared_from_this()));
 }
 
-void WsClientSession::do_write(string message)
+void WsClientSession::do_write(string message, bool async)
 {
     INFO("ws write, remote %s:%d local %s:%d message:%s\n", mRemoteIp.c_str(), mRemotePort, mLocalIp.c_str(), mLocalPort, message.c_str());
     mStream.text(true);
-    // Send the message
-    mStream.async_write(net::buffer(message), beast::bind_front_handler(&WsClientSession::on_write, shared_from_this()));
+    if (async) {
+        // Send the message
+        mStream.async_write(net::buffer(message), beast::bind_front_handler(&WsClientSession::on_write, shared_from_this()));
+    } else {
+        beast::error_code ec;
+        mStream.write(net::buffer(message), ec);
+        if (ec) {
+            ERR("error ws write, remote %s:%d local %s:%d, msg:%s\n", mRemoteIp.c_str(), mRemotePort, mLocalIp.c_str(), mLocalPort, ec.message().c_str());
+            return;
+        }
+    }
 }
 
-void WsClientSession::do_write(char* data, int len)
+void WsClientSession::do_write(char* data, int len, bool async)
 {
     DEBUG("ws write, remote %s:%d local %s:%d\n", mRemoteIp.c_str(), mRemotePort, mLocalIp.c_str(), mLocalPort);
     mStream.binary(true);
-    // Send the message
-    mStream.async_write(net::buffer(data, len), beast::bind_front_handler(&WsClientSession::on_write, shared_from_this()));
+    if (async) {
+        // Send the message
+        mStream.async_write(net::buffer(data, len), beast::bind_front_handler(&WsClientSession::on_write, shared_from_this()));
+    } else {
+        beast::error_code ec;
+        mStream.write(net::buffer(data, len), ec);
+        if (ec) {
+            ERR("error ws write, remote %s:%d local %s:%d, msg:%s\n", mRemoteIp.c_str(), mRemotePort, mLocalIp.c_str(), mLocalPort, ec.message().c_str());
+            return;
+        }
+    }
 }
 
 void WsClientSession::on_write(beast::error_code ec, std::size_t bytes_transferred)

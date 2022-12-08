@@ -78,20 +78,38 @@ void WsServerSession::on_read(beast::error_code ec, std::size_t bytes_transferre
     do_read();
 }
 
-void WsServerSession::do_write(string message)
+void WsServerSession::do_write(string message, bool async)
 {
     INFO("ws send message, remote %s:%d message:%s\n", mRemoteIp.c_str(), mRemotePort, message.c_str());
     std::lock_guard<std::mutex> l(mMutex);
     mStream.text(true);
-    mStream.async_write(net::buffer(message), beast::bind_front_handler(&WsServerSession::on_write, shared_from_this()));
+    if (async) {
+        mStream.async_write(net::buffer(message), beast::bind_front_handler(&WsServerSession::on_write, shared_from_this()));
+    } else {
+        beast::error_code ec;
+        mStream.write(net::buffer(message), ec);
+        if (ec) {
+            ERR("error ws write, remote %s:%d msg:%s\n", mRemoteIp.c_str(), mRemotePort, ec.message().c_str());
+            return;
+        }
+    }
 }
 
-void WsServerSession::do_write(char* data, int len)
+void WsServerSession::do_write(char* data, int len, bool async)
 {
     DEBUG("ws send data, remote %s:%d\n", mRemoteIp.c_str(), mRemotePort);
     std::lock_guard<std::mutex> l(mMutex);
     mStream.binary(true);
-    mStream.async_write(net::buffer(data, len), beast::bind_front_handler(&WsServerSession::on_write, shared_from_this()));
+    if (async) {
+        mStream.async_write(net::buffer(data, len), beast::bind_front_handler(&WsServerSession::on_write, shared_from_this()));
+    } else {
+        beast::error_code ec;
+        mStream.write(net::buffer(data, len), ec);
+        if (ec) {
+            ERR("error ws write, remote %s:%d msg:%s\n", mRemoteIp.c_str(), mRemotePort, ec.message().c_str());
+            return;
+        }
+    }
 }
 
 void WsServerSession::on_write(beast::error_code ec, std::size_t bytes_transferred)

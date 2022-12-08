@@ -6,8 +6,8 @@ class WsClientSession : public std::enable_shared_from_this<WsClientSession>, pu
 public:
     WsClientSession(shared_ptr<net::io_context> ioContext, string host, int port, string path, string query, WebSocketClientCb cb);
     void start();
-    void do_write(string message);
-    void do_write(char* data, int len);
+    void do_write(string message, bool async = false);
+    void do_write(char* data, int len, bool async = false);
 
 private:
     void on_resolve(beast::error_code ec, tcp::resolver::results_type results);
