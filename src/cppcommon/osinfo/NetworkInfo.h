@@ -24,4 +24,7 @@ public:
     static string GetInterfaceIp();
     static vector<string> GetAllInterfaceIp();
     static bool IsInnerIp(struct in_addr* addr);
+    static bool IsInnerIp(string str);
+    static bool IsIp(string str);
+    static bool IsMac(string str);
 };

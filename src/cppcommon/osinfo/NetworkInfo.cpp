@@ -1,4 +1,5 @@
 #include "NetworkInfo.h"
+#include <regex>
 
 string NetworkInfo::GetInterfaceIp()
 {
@@ -132,6 +133,38 @@ bool NetworkInfo::IsInnerIp(struct in_addr* addr)
         (ip >= 0xAC100000 && ip <= 0xAC1FFFFF) || // 172.16.0.0 ~ 172.31.255.255
         (ip >= 0xC0A80000 && ip <= 0xC0A8FFFF) // 192.168.0.0 ~ 192.168.255.255
     ) {
+        return true;
+    }
+    return false;
+}
+
+bool NetworkInfo::IsInnerIp(string str)
+{
+    struct in_addr addr;
+    int ret = inet_pton(AF_INET, str.c_str(), &addr);
+    if (ret <= 0) {
+        return false;
+    }
+    return IsInnerIp(&addr);
+}
+
+bool NetworkInfo::IsIp(string str)
+{
+    std::regex pattern("((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)");
+    std::smatch res;
+    if (regex_match(str, res, pattern)) {
+        return true;
+    }
+    return false;
+}
+
+bool NetworkInfo::IsMac(string str)
+{
+    std::regex pattern("(^[A-Fa-f\\d]{2}\\.[A-Fa-f\\d]{2}\\.[A-Fa-f\\d]{2}\\.[A-Fa-f\\d]{2}\\.[A-Fa-f\\d]{2}\\.[A-Fa-f\\d]{2}$)");
+
+    //    let reg = /^[A-Fa-f\d]{2}.[A-Fa-f\d]{2}.[A-Fa-f\d]{2}.[A-Fa-f\d]{2}.[A-Fa-f\d]{2}.[A-Fa-f\d]{2}$/;
+    std::smatch res;
+    if (regex_match(str, res, pattern)) {
         return true;
     }
     return false;

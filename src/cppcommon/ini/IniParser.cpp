@@ -16,6 +16,7 @@ IniParser::~IniParser()
 int IniParser::setFileName(string fileName)
 {
     boost::property_tree::ini_parser::read_ini(fileName, mPt);
+    mFileName = fileName;
     return 0;
 }
 
@@ -74,4 +75,13 @@ map<string, map<string, string>> IniParser::get()
         sections[section] = pairs;
     }
     return sections;
+}
+
+bool IniParser::updateItem(string section, string name, string value)
+{
+    std::ostringstream oss;
+    oss << section << "." << name;
+    mPt.put<string>(oss.str(), value);
+    write_ini(mFileName, mPt);
+    return true;
 }
