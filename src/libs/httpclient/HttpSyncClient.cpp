@@ -47,27 +47,27 @@ void HttpSyncClient::close()
     }
 }
 
-int HttpSyncClient::httpGet(string path, string& body)
+int HttpSyncClient::httpGet(string path, vector<map<string, string>> headers, string& body)
 {
     if (mSsl) {
-        return mSslSession->httpGet(path, body);
+        return mSslSession->httpGet(path, headers, body);
     } else {
-        return mSession->httpGet(path, body);
+        return mSession->httpGet(path, headers, body);
     }
     return 0;
 }
 
-int HttpSyncClient::httpPost(string path, string contentType, string content, string& body)
+int HttpSyncClient::httpPost(string path, vector<map<string, string>> headers, string contentType, string content, string& body)
 {
     if (mSsl) {
-        return mSslSession->httpPost(path, contentType, content, body);
+        return mSslSession->httpPost(path, headers, contentType, content, body);
     } else {
-        return mSession->httpPost(path, contentType, content, body);
+        return mSession->httpPost(path, headers, contentType, content, body);
     }
     return 0;
 }
 
-int HttpSyncClient::HttpGet(string url_s, string& body)
+int HttpSyncClient::HttpGet(string url_s, vector<map<string, string>> headers, string& body)
 {
     Url url;
     int ret = 0;
@@ -82,7 +82,7 @@ int HttpSyncClient::HttpGet(string url_s, string& body)
             return -1;
         }
         string path = boost::str(boost::format("%s%s") % url.path % url.query);
-        return client.httpGet(url.path, body);
+        return client.httpGet(url.path, headers, body);
     } else if ("https" == url.protocol) {
         HttpSyncClient client;
         client.setSsl(true);
@@ -93,7 +93,7 @@ int HttpSyncClient::HttpGet(string url_s, string& body)
             return -1;
         }
         string path = boost::str(boost::format("%s%s") % url.path % url.query);
-        return client.httpGet(url.path, body);
+        return client.httpGet(url.path, headers, body);
     } else {
         ERR("invalid http url, url:%s", url_s.c_str());
         return -1;
@@ -101,7 +101,7 @@ int HttpSyncClient::HttpGet(string url_s, string& body)
     return -1;
 }
 
-int HttpSyncClient::HttpPost(string url_s, string contentType, string content, string& body)
+int HttpSyncClient::HttpPost(string url_s, vector<map<string, string>> headers, string contentType, string content, string& body)
 {
     Url url;
     int ret = 0;
@@ -116,7 +116,7 @@ int HttpSyncClient::HttpPost(string url_s, string contentType, string content, s
             return -1;
         }
         string path = boost::str(boost::format("%s%s") % url.path % url.query);
-        return client.httpPost(url.path, contentType, content, body);
+        return client.httpPost(url.path, headers, contentType, content, body);
     } else if ("https" == url.protocol) {
         HttpSyncClient client;
         client.setSsl(true);
@@ -127,10 +127,16 @@ int HttpSyncClient::HttpPost(string url_s, string contentType, string content, s
             return -1;
         }
         string path = boost::str(boost::format("%s%s") % url.path % url.query);
-        return client.httpPost(url.path, contentType, content, body);
+        return client.httpPost(url.path, headers, contentType, content, body);
     } else {
         ERR("invalid http url, url:%s", url_s.c_str());
         return -1;
     }
     return -1;
+}
+
+string HttpSyncClient::GetUserAgent()
+{
+    //    return BOOST_BEAST_VERSION_STRING;
+    return "http client";
 }

@@ -120,6 +120,7 @@ endif()
 
 set(enable_jsoncc TRUE)
 set(enable_ossl TRUE)
+set(enable_base64 TRUE)
 set(enable_httpclient TRUE)
 set(enable_httpserver TRUE)
 set(enable_wsclient TRUE)

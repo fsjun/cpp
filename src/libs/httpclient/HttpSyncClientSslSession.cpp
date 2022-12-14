@@ -1,6 +1,7 @@
 #include "httpclient/HttpSyncClientSslSession.h"
 #include "boost/beast/core/error.hpp"
 #include "boost/format.hpp"
+#include "httpclient/HttpSyncClient.h"
 #include "osinfo/NetworkInfo.h"
 #include "url/Url.h"
 #include <memory>
@@ -71,12 +72,17 @@ void HttpSyncClientSslSession::close()
     mStream.reset();
 }
 
-int HttpSyncClientSslSession::httpGet(string path, string& body)
+int HttpSyncClientSslSession::httpGet(string path, vector<map<string, string>> headers, string& body)
 {
     // Set up an HTTP GET request message
     http::request<http::string_body> req { http::verb::get, path, 11 };
     req.set(http::field::host, mHost);
-    req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+    req.set(http::field::user_agent, HttpSyncClient::GetUserAgent());
+    for (auto headerMap : headers) {
+        for (auto val : headerMap) {
+            req.set(val.first, val.second);
+        }
+    }
 
     // Send the HTTP request to the remote host
     http::write(*mStream, req);
@@ -101,12 +107,17 @@ int HttpSyncClientSslSession::httpGet(string path, string& body)
     return 0;
 }
 
-int HttpSyncClientSslSession::httpPost(string path, string contentType, string content, string& body)
+int HttpSyncClientSslSession::httpPost(string path, vector<map<string, string>> headers, string contentType, string content, string& body)
 {
     // Set up an HTTP POST request message
     http::request<http::string_body> req { http::verb::post, path, 11 };
     req.set(http::field::host, mHost);
-    req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+    req.set(http::field::user_agent, HttpSyncClient::GetUserAgent());
+    for (auto headerMap : headers) {
+        for (auto val : headerMap) {
+            req.set(val.first, val.second);
+        }
+    }
     if (!contentType.empty()) {
         req.set(http::field::content_type, contentType);
     }
