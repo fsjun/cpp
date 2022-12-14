@@ -2,6 +2,13 @@
 
 #ifdef _WIN32
 //define something for Windows (32-bit and 64-bit, this part is common)
+
+#ifdef IMPORTING
+#define API_EXPORT __declspec(dllimport)
+#else
+#define API_EXPORT __declspec(dllexport)
+#endif
+
 #ifdef _WIN64
 //define something for Windows (64-bit only)
 #else

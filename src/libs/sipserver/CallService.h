@@ -1,10 +1,11 @@
 #pragma once
 
+#include "tools/boost_common.h"
+#include "tools/cpp_common.h"
+
 #include "Endpoint.h"
 #include "sipserver/CallListener.h"
 #include "sipserver/SipCall.h"
-#include "tools/boost_common.h"
-#include "tools/cpp_common.h"
 
 class CallService : public Singleton<CallService>, public std::enable_shared_from_this<CallService> {
 public:

@@ -88,6 +88,6 @@ private:
 
     friend class CallService;
     friend class ImService;
-    friend class SipCall;
+    friend struct SipCall;
     friend class Account;
 };

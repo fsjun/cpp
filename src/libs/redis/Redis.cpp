@@ -1,4 +1,4 @@
-
+﻿
 #define THIS_MODULE "REDIS"
 
 #include "Redis.h"
@@ -7,10 +7,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef _WIN32
-#define NO_QFORKIMPL
-#include <msvs\win32_interop\win32_fixes.h>
-#endif
+//#ifdef _WIN32
+//#define NO_QFORKIMPL
+//#include <msvs\win32_interop\win32_fixes.h>
+//#endif
 
 Redis::~Redis()
 {
