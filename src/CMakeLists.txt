@@ -1,4 +1,4 @@
-
+﻿
 #LINK_DIRECTORIES(/opt/pbx/libuv/lib /usr/lib64/mysql)
 #ADD_DEFINITIONS(-DDEBUG_MEMORY)
 
@@ -14,7 +14,7 @@ set(MODULE_NAME unittest)
 file(GLOB_RECURSE SRC_LIST test/*.h test/*.cpp)
 ADD_EXECUTABLE(${MODULE_NAME} ${SRC_LIST})
 if(WIN32)
-    TARGET_LINK_LIBRARIES(${MODULE_NAME} gtestd gtest_maind httpclient cppcommon)
+    TARGET_LINK_LIBRARIES(${MODULE_NAME} gtest gtest_main httpclient cppcommon)
 elseif(APPLE)
     TARGET_LINK_LIBRARIES(${MODULE_NAME} gtest gtest_main httpclient cppcommon)
 else()
@@ -25,7 +25,7 @@ set(MODULE_NAME cppcommon)
 file(GLOB_RECURSE SRC_LIST cppcommon/*.h cppcommon/*.cpp)
 add_library(${MODULE_NAME} ${SRC_LIST})
 if(WIN32)
-TARGET_LINK_LIBRARIES(${MODULE_NAME} libboost_system-vc143-mt-x64-1_78 libboost_program_options-vc143-mt-x64-1_78 crypt32 Ws2_32 Wldap32 Normaliz ssleay32 libeay32)
+TARGET_LINK_LIBRARIES(${MODULE_NAME} boost_system-vc140-mt-gd boost_program_options-vc140-mt-gd crypt32 Ws2_32 Wldap32 Normaliz libssl libcrypto)
 elseif(APPLE)
 TARGET_LINK_LIBRARIES(${MODULE_NAME} boost_system boost_program_options ssl crypto)
 else()

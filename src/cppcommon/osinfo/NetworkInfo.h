@@ -8,6 +8,7 @@
 
 #include <Iphlpapi.h>
 #include <Winsock2.h>
+#include <Ws2tcpip.h>
 //#pragma comment(lib, "ws2_32.lib ")
 #pragma comment(lib, "Iphlpapi.lib")
 #else

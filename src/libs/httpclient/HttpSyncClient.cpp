@@ -1,11 +1,10 @@
-#include "httpclient/HttpSyncClient.h"
+﻿#include "httpclient/HttpSyncClient.h"
 #include "boost/beast/core/error.hpp"
 #include "boost/format.hpp"
 #include "osinfo/NetworkInfo.h"
 #include "url/Url.h"
 #include <memory>
 #include <string>
-#include <unistd.h>
 
 void HttpSyncClient::setSsl(bool val)
 {

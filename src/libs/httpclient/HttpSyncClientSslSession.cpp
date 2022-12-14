@@ -1,4 +1,4 @@
-#include "httpclient/HttpSyncClientSslSession.h"
+﻿#include "httpclient/HttpSyncClientSslSession.h"
 #include "boost/beast/core/error.hpp"
 #include "boost/format.hpp"
 #include "httpclient/HttpSyncClient.h"
@@ -6,7 +6,6 @@
 #include "url/Url.h"
 #include <memory>
 #include <string>
-#include <unistd.h>
 
 HttpSyncClientSslSession::~HttpSyncClientSslSession()
 {

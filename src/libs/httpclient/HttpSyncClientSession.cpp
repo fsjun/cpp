@@ -1,11 +1,10 @@
-#include "httpclient/HttpSyncClientSession.h"
+﻿#include "httpclient/HttpSyncClientSession.h"
 #include "boost/beast/core/error.hpp"
 #include "boost/format.hpp"
 #include "httpclient/HttpSyncClient.h"
 #include "url/Url.h"
 #include <memory>
 #include <string>
-#include <unistd.h>
 
 HttpSyncClientSession::~HttpSyncClientSession()
 {
