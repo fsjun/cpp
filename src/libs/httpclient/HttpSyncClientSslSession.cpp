@@ -1,5 +1,6 @@
 ﻿#include "httpclient/HttpSyncClientSslSession.h"
 #include "boost/beast/core/error.hpp"
+#include "boost/beast/http/verb.hpp"
 #include "boost/format.hpp"
 #include "httpclient/HttpSyncClient.h"
 #include "osinfo/NetworkInfo.h"
@@ -110,6 +111,48 @@ int HttpSyncClientSslSession::httpPost(string path, vector<map<string, string>> 
 {
     // Set up an HTTP POST request message
     http::request<http::string_body> req { http::verb::post, path, 11 };
+    req.set(http::field::host, mHost);
+    req.set(http::field::user_agent, HttpSyncClient::GetUserAgent());
+    for (auto headerMap : headers) {
+        for (auto val : headerMap) {
+            req.set(val.first, val.second);
+        }
+    }
+    if (!contentType.empty()) {
+        req.set(http::field::content_type, contentType);
+    }
+    if (!body.empty()) {
+        req.body() = body;
+        req.prepare_payload();
+    }
+
+    // Send the HTTP request to the remote host
+    http::write(*mStream, req);
+
+    // This buffer is used for reading and must be persisted
+    beast::flat_buffer buffer;
+
+    // Declare a container to hold the response
+    http::response<http::string_body> res;
+
+    // Receive the HTTP response
+    http::read(*mStream, buffer, res);
+
+    int code = res.result_int();
+    string reason = res.reason().to_string();
+    if (code != 200) {
+        ERR("http fail, path:%s code:%d reason:%s\n", path.c_str(), code, reason.c_str());
+        return -1;
+    }
+    body = res.body();
+    INFO("http success, path:%s code:%d reason:%s body:%s\n", path.c_str(), code, reason.c_str(), body.c_str());
+    return 0;
+}
+
+int HttpSyncClientSslSession::httpMethod(string path, boost::beast::http::verb method, vector<map<string, string>> headers, string contentType, string content, string& body)
+{
+    // Set up an HTTP POST request message
+    http::request<http::string_body> req { method, path, 11 };
     req.set(http::field::host, mHost);
     req.set(http::field::user_agent, HttpSyncClient::GetUserAgent());
     for (auto headerMap : headers) {

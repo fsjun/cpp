@@ -25,6 +25,7 @@ public:
     void close();
     int httpGet(string path, vector<map<string, string>> headers, string& body);
     int httpPost(string path, vector<map<string, string>> headers, string contentType, string content, string& body);
+    int httpMethod(string path, boost::beast::http::verb method, vector<map<string, string>> headers, string contentType, string content, string& body);
 
 private:
     void load_root_certificates(ssl::context& ctx);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "boost/beast/http/verb.hpp"
 #include "tools/cpp_common.h"
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -21,6 +22,7 @@ public:
     void close();
     int httpGet(string path, vector<map<string, string>> headers, string& body);
     int httpPost(string path, vector<map<string, string>> headers, string contentType, string content, string& body);
+    int httpMethod(string path, boost::beast::http::verb method, vector<map<string, string>> headers, string contentType, string content, string& body);
 
 private:
     string mHost;

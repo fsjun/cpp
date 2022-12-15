@@ -66,6 +66,16 @@ int HttpSyncClient::httpPost(string path, vector<map<string, string>> headers, s
     return 0;
 }
 
+int HttpSyncClient::httpMethod(string path, boost::beast::http::verb method, vector<map<string, string>> headers, string contentType, string content, string& body)
+{
+    if (mSsl) {
+        return mSslSession->httpMethod(path, method, headers, contentType, content, body);
+    } else {
+        return mSession->httpMethod(path, method, headers, contentType, content, body);
+    }
+    return 0;
+}
+
 int HttpSyncClient::HttpGet(string url_s, vector<map<string, string>> headers, string& body)
 {
     Url url;
@@ -127,6 +137,40 @@ int HttpSyncClient::HttpPost(string url_s, vector<map<string, string>> headers, 
         }
         string path = boost::str(boost::format("%s%s") % url.path % url.query);
         return client.httpPost(url.path, headers, contentType, content, body);
+    } else {
+        ERR("invalid http url, url:%s", url_s.c_str());
+        return -1;
+    }
+    return -1;
+}
+
+int HttpSyncClient::HttpMethod(string url_s, boost::beast::http::verb method, vector<map<string, string>> headers, string contentType, string content, string& body)
+{
+    Url url;
+    int ret = 0;
+    url.parse(url_s);
+    if ("http" == url.protocol) {
+        HttpSyncClient client;
+        client.setSsl(false);
+        client.setHost(url.host);
+        client.setPort(url.port);
+        ret = client.connect();
+        if (ret < 0) {
+            return -1;
+        }
+        string path = boost::str(boost::format("%s%s") % url.path % url.query);
+        return client.httpMethod(url.path, method, headers, contentType, content, body);
+    } else if ("https" == url.protocol) {
+        HttpSyncClient client;
+        client.setSsl(true);
+        client.setHost(url.host);
+        client.setPort(url.port);
+        ret = client.connect();
+        if (ret < 0) {
+            return -1;
+        }
+        string path = boost::str(boost::format("%s%s") % url.path % url.query);
+        return client.httpMethod(url.path, method, headers, contentType, content, body);
     } else {
         ERR("invalid http url, url:%s", url_s.c_str());
         return -1;
