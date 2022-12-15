@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.11)
+﻿cmake_minimum_required (VERSION 3.11)
 if(UNIX AND NOT APPLE)
     set(LINUX TRUE)
 endif()
@@ -30,13 +30,35 @@ if(WIN32)
 
 SET(CMAKE_INSTALL_PREFIX "D:/program/cpp")
 
-ADD_DEFINITIONS(-DCMAKE_BUILD_TYPE=DEBUG)
+#ADD_DEFINITIONS(-DCMAKE_BUILD_TYPE=DEBUG)
 include_directories(D:/program/vcpkg/installed/x64-windows/include)
 LINK_DIRECTORIES(D:/program/vcpkg/installed/x64-windows/debug/lib)
 LINK_DIRECTORIES(D:/program/vcpkg/installed/x64-windows/debug/lib/manual-link)
+include_directories(D:/program/vcpkg/installed/x64-windows-static/include)
+LINK_DIRECTORIES(D:/program/vcpkg/installed/x64-windows-static/debug/lib)
+LINK_DIRECTORIES(D:/program/vcpkg/installed/x64-windows-static/debug/lib/manual-link)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /wd4430")
-add_definitions(-DWIN32_LEAN_AND_MEAN)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj /wd4430 /utf-8")
+
+if (MSVC)
+    set(CompilerFlags
+        CMAKE_CXX_FLAGS
+        CMAKE_CXX_FLAGS_DEBUG
+        CMAKE_CXX_FLAGS_RELEASE
+        CMAKE_C_FLAGS
+        CMAKE_C_FLAGS_DEBUG
+        CMAKE_C_FLAGS_RELEASE
+        )
+    foreach(CompilerFlag ${CompilerFlags})
+        string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+    endforeach()
+endif(MSVC)
+
+message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+message(STATUS "CMAKE_CXX_FLAGS_DEBUG: ${CMAKE_CXX_FLAGS_DEBUG}")
+message(STATUS "CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")
+message(STATUS "CMAKE_C_FLAGS_DEBUG: ${CMAKE_C_FLAGS_DEBUG}")
+add_definitions(-DWIN32_LEAN_AND_MEAN -D_WIN32_WINNT=0x0601)
 
 elseif(APPLE)
 
