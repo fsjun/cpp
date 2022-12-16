@@ -132,15 +132,11 @@ int Compress::UnZip(string zipFileName, string dir)
         return -1;
     }
     unz_file_info* fileInfo = new unz_file_info();
-    int size = 1024;
-    char fileNameInZip[size];
-    char extraField[size];
-    char szComment[size];
-    memset(fileNameInZip, 0, size);
-    memset(extraField, 0, size);
-    memset(szComment, 0, size);
+    char fileNameInZip[1024] = { 0 };
+    int size;
     for (int i = 0; i < (int)globalInfo->number_entry; i++) {
-        ret = unzGetCurrentFileInfo(unzfile, fileInfo, fileNameInZip, size, extraField, size, szComment, size);
+        size = sizeof(fileNameInZip);
+        ret = unzGetCurrentFileInfo(unzfile, fileInfo, fileNameInZip, size, nullptr, 0, nullptr, 0);
         if (ret != UNZ_OK) {
             ERR("unzGetCurrentFileInfo failed\n");
             return -1;
@@ -157,7 +153,8 @@ int Compress::UnZip(string zipFileName, string dir)
                 return -1;
             }
             std::ofstream ofs(p, std::ios::binary);
-            char buff[size];
+            char buff[1024];
+            size = sizeof(buff);
             while (true) {
                 memset(buff, 0, size);
                 ret = unzReadCurrentFile(unzfile, buff, size);
