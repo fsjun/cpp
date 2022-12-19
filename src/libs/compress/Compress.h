@@ -8,4 +8,5 @@ public:
     static void EnumDirFiles(string dir, vector<string>& fileVec);
     static int Zip(string dir, string zipFileName);
     static int UnZip(string zipFileName, string dir);
+    static int GetFirstNodeName(string zipFileName, string& fileName);
 };

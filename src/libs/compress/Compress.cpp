@@ -1,4 +1,4 @@
-#include <fstream>
+﻿#include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -170,6 +170,41 @@ int Compress::UnZip(string zipFileName, string dir)
             unzCloseCurrentFile(unzfile);
         }
         unzGoToNextFile(unzfile);
+    }
+    return 0;
+}
+
+int Compress::GetFirstNodeName(string zipFileName, string& fileName)
+{
+    int ret = 0;
+    unzFile unzfile = unzOpen(zipFileName.c_str());
+    if (unzfile == NULL) {
+        ERR("unzOpen failed, fileName:%s\n", zipFileName.c_str());
+        return -1;
+    }
+    Defer d([unzfile]() {
+        unzClose(unzfile);
+    });
+    unz_global_info* globalInfo = new unz_global_info();
+    ret = unzGetGlobalInfo(unzfile, globalInfo);
+    if (ret != UNZ_OK) {
+        ERR("unzGetGlobalInfo failed\n");
+        return -1;
+    }
+    unz_file_info* fileInfo = new unz_file_info();
+    char fileNameInZip[1024] = { 0 };
+    int size = sizeof(fileNameInZip);
+    ret = unzGetCurrentFileInfo(unzfile, fileInfo, fileNameInZip, size, nullptr, 0, nullptr, 0);
+    if (ret != UNZ_OK) {
+        ERR("unzGetCurrentFileInfo failed\n");
+        return -1;
+    }
+    string tmpFileName = fileNameInZip;
+    int pos = tmpFileName.find_first_of('/');
+    if (pos == string::npos) {
+        fileName = tmpFileName;
+    } else {
+        fileName = tmpFileName.substr(0, pos);
     }
     return 0;
 }
