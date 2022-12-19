@@ -80,7 +80,7 @@ int HttpSyncClientSession::httpGet(string path, vector<map<string, string>> head
 
     int code = res.result_int();
     string reason = res.reason().to_string();
-    if (code != 200) {
+    if (code / 100 != 2) {
         ERR("http fail, path:%s code:%d reason:%s\n", path.c_str(), code, reason.c_str());
         return -1;
     }
@@ -122,7 +122,7 @@ int HttpSyncClientSession::httpPost(string path, vector<map<string, string>> hea
 
     int code = res.result_int();
     string reason = res.reason().to_string();
-    if (code != 200) {
+    if (code / 100 != 2) {
         ERR("http fail, path:%s code:%d reason:%s\n", path.c_str(), code, reason.c_str());
         return -1;
     }
@@ -164,7 +164,7 @@ int HttpSyncClientSession::httpMethod(string path, boost::beast::http::verb meth
 
     int code = res.result_int();
     string reason = res.reason().to_string();
-    if (code != 200) {
+    if (code / 100 != 2) {
         ERR("http fail, path:%s code:%d reason:%s\n", path.c_str(), code, reason.c_str());
         return -1;
     }
