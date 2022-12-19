@@ -145,7 +145,7 @@ int HttpSyncClientSslSession::httpPost(string path, vector<map<string, string>> 
         return -1;
     }
     body = res.body();
-    INFO("http success, path:%s code:%d reason:%s body:%s\n", path.c_str(), code, reason.c_str(), body.c_str());
+    INFO("http success, path:%s content:%s code:%d reason:%s body:%s\n", path.c_str(), content.c_str(), code, reason.c_str(), body.c_str());
     return 0;
 }
 
@@ -187,7 +187,7 @@ int HttpSyncClientSslSession::httpMethod(string path, boost::beast::http::verb m
         return -1;
     }
     body = res.body();
-    INFO("http success, path:%s code:%d reason:%s body:%s\n", path.c_str(), code, reason.c_str(), body.c_str());
+    INFO("http success, path:%s content:%s code:%d reason:%s body:%s\n", path.c_str(), content.c_str(), code, reason.c_str(), body.c_str());
     return 0;
 }
 

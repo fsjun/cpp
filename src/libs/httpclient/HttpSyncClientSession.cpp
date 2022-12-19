@@ -127,7 +127,7 @@ int HttpSyncClientSession::httpPost(string path, vector<map<string, string>> hea
         return -1;
     }
     body = res.body();
-    INFO("http success, path:%s code:%d reason:%s body:%s\n", path.c_str(), code, reason.c_str(), body.c_str());
+    INFO("http success, path:%s content:%s code:%d reason:%s body:%s\n", path.c_str(), content.c_str(), code, reason.c_str(), body.c_str());
     return 0;
 }
 
@@ -169,6 +169,6 @@ int HttpSyncClientSession::httpMethod(string path, boost::beast::http::verb meth
         return -1;
     }
     body = res.body();
-    INFO("http success, path:%s code:%d reason:%s body:%s\n", path.c_str(), code, reason.c_str(), body.c_str());
+    INFO("http success, path:%s content:%s code:%d reason:%s body:%s\n", path.c_str(), content.c_str(), code, reason.c_str(), body.c_str());
     return 0;
 }

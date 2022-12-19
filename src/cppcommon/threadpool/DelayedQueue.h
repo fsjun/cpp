@@ -38,7 +38,7 @@ public:
 private:
     struct Task {
         string taskId;
-        long ms;
+        std::chrono::time_point<std::chrono::system_clock> ms;
         T t;
     };
     list<T> mQueue;
@@ -84,7 +84,7 @@ bool DelayedQueue<T>::push(string taskId, long duration_ms, T e)
     if (mQuit) {
         return false;
     }
-    long ms = Tools::NowMs() + duration_ms;
+    std::chrono::time_point<std::chrono::system_clock> ms = std::chrono::system_clock::now() + std::chrono::milliseconds(duration_ms);
     Task task = { taskId, ms, std::move(e) };
     auto it = std::upper_bound(mDelayedQueue.begin(), mDelayedQueue.end(), task, [](const Task& l, const Task& r) { return l.ms < r.ms; });
     it = mDelayedQueue.insert(it, std::move(task));
@@ -114,7 +114,7 @@ bool DelayedQueue<T>::tryPush(string taskId, long duration_ms, T e)
     if (mQuit || (mMaxSize > 0 && mQueue.size() + mDelayedQueue.size() >= mMaxSize)) {
         return false;
     }
-    long ms = Tools::NowMs() + duration_ms;
+    auto ms = std::chrono::system_clock::now() + std::chrono::milliseconds(duration_ms);
     Task task = { taskId, ms, std::move(e) };
     auto it = std::upper_bound(mDelayedQueue.begin(), mDelayedQueue.end(), task, [](const Task& l, const Task& r) { return l.ms < r.ms; });
     it = mDelayedQueue.insert(it, std::move(task));
@@ -155,8 +155,8 @@ bool DelayedQueue<T>::pop(T& t)
         }
         if (!mDelayedQueue.empty()) {
             Task& task = mDelayedQueue.front();
-            long ms = task.ms;
-            long now = Tools::NowMs();
+            auto ms = task.ms;
+            auto now = std::chrono::system_clock::now();
             if (ms <= now) {
                 t = std::move(task.t);
                 mDelayedQueue.pop_front();
@@ -172,19 +172,18 @@ bool DelayedQueue<T>::pop(T& t)
         }
         if (!mDelayedQueue.empty()) {
             Task& task = mDelayedQueue.front();
-            long ms = task.ms;
-            long now = Tools::NowMs();
+            auto ms = task.ms;
+            auto now = std::chrono::system_clock::now();
             bool got = true;
             while (ms > now) {
-                std::chrono::time_point<std::chrono::system_clock, std::chrono::milliseconds> abs_time((std::chrono::milliseconds(ms)));
-                mCvR.wait_until(l, abs_time);
+                mCvR.wait_until(l, ms);
                 if (!mQueue.empty() || mDelayedQueue.empty()) {
                     got = false;
                     break;
                 }
                 Task& task = mDelayedQueue.front();
                 ms = task.ms;
-                now = Tools::NowMs();
+                now = std::chrono::system_clock::now();
             }
             if (got) {
                 t = std::move(task.t);
@@ -203,8 +202,8 @@ bool DelayedQueue<T>::tryPop(T& t)
     std::unique_lock<std::mutex> l(mMtx);
     if (!mDelayedQueue.empty()) {
         Task& task = mDelayedQueue.front();
-        long ms = task.ms;
-        long now = Tools::NowMs();
+        auto ms = task.ms;
+        auto now = std::chrono::system_clock::now();
         if (ms <= now) {
             t = std::move(task.t);
             mDelayedQueue.pop_front();
