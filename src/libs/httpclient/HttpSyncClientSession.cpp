@@ -103,8 +103,8 @@ int HttpSyncClientSession::httpPost(string path, vector<map<string, string>> hea
     if (!contentType.empty()) {
         req.set(http::field::content_type, contentType);
     }
-    if (!body.empty()) {
-        req.body() = body;
+    if (!content.empty()) {
+        req.body() = content;
         req.prepare_payload();
     }
 
@@ -145,8 +145,8 @@ int HttpSyncClientSession::httpMethod(string path, boost::beast::http::verb meth
     if (!contentType.empty()) {
         req.set(http::field::content_type, contentType);
     }
-    if (!body.empty()) {
-        req.body() = body;
+    if (!content.empty()) {
+        req.body() = content;
         req.prepare_payload();
     }
 

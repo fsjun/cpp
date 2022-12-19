@@ -121,8 +121,8 @@ int HttpSyncClientSslSession::httpPost(string path, vector<map<string, string>> 
     if (!contentType.empty()) {
         req.set(http::field::content_type, contentType);
     }
-    if (!body.empty()) {
-        req.body() = body;
+    if (!content.empty()) {
+        req.body() = content;
         req.prepare_payload();
     }
 
@@ -163,8 +163,8 @@ int HttpSyncClientSslSession::httpMethod(string path, boost::beast::http::verb m
     if (!contentType.empty()) {
         req.set(http::field::content_type, contentType);
     }
-    if (!body.empty()) {
-        req.body() = body;
+    if (!content.empty()) {
+        req.body() = content;
         req.prepare_payload();
     }
 
