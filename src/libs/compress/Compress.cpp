@@ -13,12 +13,14 @@
 
 int AddFileToZip(zipFile zFile, const string& fileName, const string& fileNameInZip)
 {
+    int opt_compress_level = Z_DEFAULT_COMPRESSION;
     zip_fileinfo zFileInfo = { 0 };
-    int ret = zipOpenNewFileInZip(zFile, fileNameInZip.c_str(), &zFileInfo, NULL, 0, NULL, 0, NULL, 0, Z_DEFAULT_COMPRESSION);
+    int ret = zipOpenNewFileInZip3_64(zFile, fileNameInZip.c_str(), &zFileInfo, NULL, 0, NULL, 0, NULL, (opt_compress_level != 0) ? Z_DEFLATED : 0, opt_compress_level, 0, -MAX_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY, NULL, 0, 1);
     if (ret != ZIP_OK) {
-        ERR("zipOpenNewFileInZip failed\n");
+        ERR("zipOpenNewFileInZip3_64 failed\n");
         return -1;
     }
+    DEBUG("begin write file, fileName:%s fileNameInZip:%s\n", fileName.c_str(), fileNameInZip.c_str());
     std::fstream ifs(fileName.c_str(), std::ios::binary | std::ios::in);
     char buff[1024] = { 0 };
     int size = sizeof(buff);
@@ -26,27 +28,40 @@ int AddFileToZip(zipFile zFile, const string& fileName, const string& fileNameIn
     do {
         ifs.read(buff, size);
         gcount = ifs.gcount();
-        ret = zipWriteInFileInZip(zFile, buff, gcount);
-        if (ZIP_OK != ret) {
-            ret = -1;
-            break;
+        if (gcount > 0) {
+            ret = zipWriteInFileInZip(zFile, buff, gcount);
+            if (ZIP_OK != ret) {
+                ERR("zipWriteInFileInZip error, ret:%d\n", ret);
+                ret = -1;
+                break;
+            }
         }
     } while (gcount == size);
     ifs.close();
-    zipCloseFileInZip(zFile);
+    DEBUG("end write file, fileName:%s fileNameInZip:%s\n", fileName.c_str(), fileNameInZip.c_str());
+    int res = zipCloseFileInZip(zFile);
+    if (ZIP_OK != res) {
+        ERR("zipCloseFileInZip error, res:%d\n", res);
+        return -1;
+    }
     return ret;
 }
 
 int AddDirToZip(zipFile zFile, const string& fileNameInZip)
 {
+    int opt_compress_level = Z_DEFAULT_COMPRESSION;
     zip_fileinfo zFileInfo = { 0 };
     string dirNameInZip = fileNameInZip + "/";
-    int ret = zipOpenNewFileInZip(zFile, dirNameInZip.c_str(), &zFileInfo, NULL, 0, NULL, 0, NULL, 0, Z_DEFAULT_COMPRESSION);
+    int ret = zipOpenNewFileInZip3_64(zFile, dirNameInZip.c_str(), &zFileInfo, NULL, 0, NULL, 0, NULL, (opt_compress_level != 0) ? Z_DEFLATED : 0, opt_compress_level, 0, -MAX_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY, NULL, 0, 1);
     if (ret != ZIP_OK) {
-        ERR("zipOpenNewFileInZip failed\n");
+        ERR("zipOpenNewFileInZip3_64 failed\n");
         return -1;
     }
-    zipCloseFileInZip(zFile);
+    int res = zipCloseFileInZip(zFile);
+    if (ZIP_OK != res) {
+        ERR("zipCloseFileInZip error, res:%d\n", res);
+        return -1;
+    }
     return ret;
 }
 
@@ -76,13 +91,16 @@ int Compress::Zip(string dir, string zipFileName)
         ERR("%s has no file\n", dir.c_str());
         return -1;
     }
-    zipFile zFile = zipOpen(zipFileName.c_str(), APPEND_STATUS_CREATE);
+    zipFile zFile = zipOpen64(zipFileName.c_str(), APPEND_STATUS_CREATE);
     if (zFile == NULL) {
         ERR("zipOpen failed\n");
         return -1;
     }
     Defer d([zFile]() {
-        zipClose(zFile, NULL);
+        int ret = zipClose(zFile, NULL);
+        if (ZIP_OK != ret) {
+            ERR("zipClose error, ret:%d\n", ret);
+        }
     });
     int ret = 0;
     std::filesystem::path p(dir);
@@ -117,7 +135,7 @@ int Compress::UnZip(string zipFileName, string dir)
     if (!std::filesystem::exists(dir)) {
         std::filesystem::create_directories(dir);
     }
-    unzFile unzfile = unzOpen(zipFileName.c_str());
+    unzFile unzfile = unzOpen64(zipFileName.c_str());
     if (unzfile == NULL) {
         ERR("unzOpen failed, fileName:%s\n", zipFileName.c_str());
         return -1;
@@ -125,20 +143,20 @@ int Compress::UnZip(string zipFileName, string dir)
     Defer d([unzfile]() {
         unzClose(unzfile);
     });
-    unz_global_info* globalInfo = new unz_global_info();
-    ret = unzGetGlobalInfo(unzfile, globalInfo);
+    unz_global_info64* globalInfo = new unz_global_info64();
+    ret = unzGetGlobalInfo64(unzfile, globalInfo);
     if (ret != UNZ_OK) {
-        ERR("unzGetGlobalInfo failed\n");
+        ERR("unzGetGlobalInfo64 failed\n");
         return -1;
     }
-    unz_file_info* fileInfo = new unz_file_info();
+    unz_file_info64* fileInfo = new unz_file_info64();
     char fileNameInZip[1024] = { 0 };
     int size;
     for (int i = 0; i < (int)globalInfo->number_entry; i++) {
         size = sizeof(fileNameInZip);
-        ret = unzGetCurrentFileInfo(unzfile, fileInfo, fileNameInZip, size, nullptr, 0, nullptr, 0);
+        ret = unzGetCurrentFileInfo64(unzfile, fileInfo, fileNameInZip, size, nullptr, 0, nullptr, 0);
         if (ret != UNZ_OK) {
-            ERR("unzGetCurrentFileInfo failed\n");
+            ERR("unzGetCurrentFileInfo64 failed\n");
             return -1;
         }
         string fileName = fileNameInZip;
