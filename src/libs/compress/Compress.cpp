@@ -6,6 +6,9 @@
 #include "minizip/unzip.h"
 #include "minizip/zip.h"
 
+#include "boost/format.hpp"
+#include "process/Process.h"
+
 #include "compress/Compress.h"
 #include "log/Log.h"
 #include "tools/Defer.h"
@@ -225,4 +228,16 @@ int Compress::GetFirstNodeName(string zipFileName, string& fileName)
         fileName = tmpFileName.substr(0, pos);
     }
     return 0;
+}
+
+int Compress::Zip7z(string dir, string zipFileName)
+{
+    string cmd = boost::str(boost::format("7z a -tzip -mmt -mx1 %s %s") % zipFileName % dir);
+    string result;
+    int ret = Process::System(cmd, result);
+    if (ret < 0) {
+        ERR("cmd execute fail, cmd:%s\n", cmd.c_str());
+        return ret;
+    }
+    return ret;
 }

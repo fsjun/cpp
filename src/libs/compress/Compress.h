@@ -9,4 +9,6 @@ public:
     static int Zip(string dir, string zipFileName);
     static int UnZip(string zipFileName, string dir);
     static int GetFirstNodeName(string zipFileName, string& fileName);
+
+    static int Zip7z(string dir, string zipFileName);
 };
