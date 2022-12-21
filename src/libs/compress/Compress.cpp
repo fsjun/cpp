@@ -236,8 +236,9 @@ int Compress::Zip7z(string dir, string zipFileName)
     string result;
     int ret = Process::System(cmd, result);
     if (ret < 0) {
-        ERR("cmd execute fail, cmd:%s\n", cmd.c_str());
+        ERR("cmd execute fail, cmd:%s result:%s\n", cmd.c_str(), result.c_str());
         return ret;
     }
+    DEBUG("\n%s\n%s\n", cmd.c_str(), result.c_str());
     return ret;
 }
