@@ -11,4 +11,6 @@ public:
     static int GetFirstNodeName(string zipFileName, string& fileName);
 
     static int Zip7z(string dir, string zipFileName);
+    static int UnZip7z(string zipFileName, string dir);
+    static int GetFirstNodeName7z(string zipFileName, string& fileName);
 };

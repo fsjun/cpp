@@ -6,6 +6,7 @@
 #include "minizip/unzip.h"
 #include "minizip/zip.h"
 
+#include "boost/algorithm/string.hpp"
 #include "boost/format.hpp"
 #include "process/Process.h"
 
@@ -140,7 +141,7 @@ int Compress::UnZip(string zipFileName, string dir)
     }
     unzFile unzfile = unzOpen64(zipFileName.c_str());
     if (unzfile == NULL) {
-        ERR("unzOpen failed, fileName:%s\n", zipFileName.c_str());
+        ERR("unzOpen64 failed, fileName:%s\n", zipFileName.c_str());
         return -1;
     }
     Defer d([unzfile]() {
@@ -198,26 +199,26 @@ int Compress::UnZip(string zipFileName, string dir)
 int Compress::GetFirstNodeName(string zipFileName, string& fileName)
 {
     int ret = 0;
-    unzFile unzfile = unzOpen(zipFileName.c_str());
+    unzFile unzfile = unzOpen64(zipFileName.c_str());
     if (unzfile == NULL) {
-        ERR("unzOpen failed, fileName:%s\n", zipFileName.c_str());
+        ERR("unzOpen64 failed, fileName:%s\n", zipFileName.c_str());
         return -1;
     }
     Defer d([unzfile]() {
         unzClose(unzfile);
     });
-    unz_global_info* globalInfo = new unz_global_info();
-    ret = unzGetGlobalInfo(unzfile, globalInfo);
+    unz_global_info64* globalInfo = new unz_global_info64();
+    ret = unzGetGlobalInfo64(unzfile, globalInfo);
     if (ret != UNZ_OK) {
-        ERR("unzGetGlobalInfo failed\n");
+        ERR("unzGetGlobalInfo64 failed\n");
         return -1;
     }
-    unz_file_info* fileInfo = new unz_file_info();
+    unz_file_info64* fileInfo = new unz_file_info64();
     char fileNameInZip[1024] = { 0 };
     int size = sizeof(fileNameInZip);
-    ret = unzGetCurrentFileInfo(unzfile, fileInfo, fileNameInZip, size, nullptr, 0, nullptr, 0);
+    ret = unzGetCurrentFileInfo64(unzfile, fileInfo, fileNameInZip, size, nullptr, 0, nullptr, 0);
     if (ret != UNZ_OK) {
-        ERR("unzGetCurrentFileInfo failed\n");
+        ERR("unzGetCurrentFileInfo64 failed\n");
         return -1;
     }
     string tmpFileName = fileNameInZip;
@@ -240,5 +241,45 @@ int Compress::Zip7z(string dir, string zipFileName)
         return ret;
     }
     DEBUG("\n%s\n%s\n", cmd.c_str(), result.c_str());
+    return ret;
+}
+
+int Compress::UnZip7z(string zipFileName, string dir)
+{
+    string cmd = boost::str(boost::format("7z x %s -o%s") % zipFileName % dir);
+    string result;
+    int ret = Process::System(cmd, result);
+    if (ret < 0) {
+        ERR("cmd execute fail, cmd:%s result:%s\n", cmd.c_str(), result.c_str());
+        return ret;
+    }
+    DEBUG("\n%s\n%s\n", cmd.c_str(), result.c_str());
+    return 0;
+}
+
+int Compress::GetFirstNodeName7z(string zipFileName, string& fileName)
+{
+    string cmd = boost::str(boost::format("7z l %s") % zipFileName);
+    string result;
+    int ret = Process::System(cmd, result);
+    if (ret < 0) {
+        ERR("cmd execute fail, cmd:%s result:%s\n", cmd.c_str(), result.c_str());
+        return ret;
+    }
+    DEBUG("\n%s\n%s\n", cmd.c_str(), result.c_str());
+    vector<string> lineVec;
+    boost::split(lineVec, result, boost::is_any_of("\r\n"), boost::token_compress_on);
+    if (lineVec.size() < 14) {
+        ERR("result has no file, cmd:%s result:%s\n", cmd.c_str(), result.c_str());
+        return -1;
+    }
+    string fileStr = lineVec[13];
+    vector<string> fileVec;
+    boost::split(fileVec, fileStr, boost::is_any_of(" "), boost::token_compress_on);
+    if (fileStr.size() < 1) {
+        ERR("fileStr has no file path, fileStr:%s\n", fileStr.c_str());
+        return -1;
+    }
+    fileName = fileVec.back();
     return ret;
 }
