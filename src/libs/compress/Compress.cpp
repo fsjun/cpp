@@ -233,7 +233,7 @@ int Compress::GetFirstNodeName(string zipFileName, string& fileName)
 
 int Compress::Zip7z(string dir, string zipFileName)
 {
-    string cmd = boost::str(boost::format("7z a -tzip -mmt -mx1 %s %s") % zipFileName % dir);
+    string cmd = boost::str(boost::format("7z a -tzip -mmt -mx1 \"%s\" \"%s\"") % zipFileName % dir);
     string result;
     int ret = Process::System(cmd, result);
     if (ret < 0) {
@@ -246,7 +246,7 @@ int Compress::Zip7z(string dir, string zipFileName)
 
 int Compress::UnZip7z(string zipFileName, string dir)
 {
-    string cmd = boost::str(boost::format("7z x %s -o%s") % zipFileName % dir);
+    string cmd = boost::str(boost::format("7z x \"%s\" -o\"%s\"") % zipFileName % dir);
     string result;
     int ret = Process::System(cmd, result);
     if (ret < 0) {
@@ -259,7 +259,7 @@ int Compress::UnZip7z(string zipFileName, string dir)
 
 int Compress::GetFirstNodeName7z(string zipFileName, string& fileName)
 {
-    string cmd = boost::str(boost::format("7z l %s") % zipFileName);
+    string cmd = boost::str(boost::format("7z l \"%s\"") % zipFileName);
     string result;
     int ret = Process::System(cmd, result);
     if (ret < 0) {
