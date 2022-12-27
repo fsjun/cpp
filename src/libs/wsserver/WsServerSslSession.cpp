@@ -92,7 +92,7 @@ void WsServerSslSession::on_read(beast::error_code ec, std::size_t bytes_transfe
     do_read();
 }
 
-void WsServerSslSession::do_write(string message, bool async)
+int WsServerSslSession::do_write(string message, bool async)
 {
     INFO("wss send message, remote %s:%d message:%s\n", mRemoteIp.c_str(), mRemotePort, message.c_str());
     std::lock_guard<std::mutex> l(mMutex);
@@ -104,12 +104,13 @@ void WsServerSslSession::do_write(string message, bool async)
         mStream.write(net::buffer(message), ec);
         if (ec) {
             ERR("error ws write, remote %s:%d msg:%s\n", mRemoteIp.c_str(), mRemotePort, ec.message().c_str());
-            return;
+            return -1;
         }
     }
+    return 0;
 }
 
-void WsServerSslSession::do_write(char* data, int len, bool async)
+int WsServerSslSession::do_write(char* data, int len, bool async)
 {
     DEBUG("wss send message, remote %s:%d\n", mRemoteIp.c_str(), mRemotePort);
     std::lock_guard<std::mutex> l(mMutex);
@@ -121,9 +122,10 @@ void WsServerSslSession::do_write(char* data, int len, bool async)
         mStream.write(net::buffer(data, len), ec);
         if (ec) {
             ERR("error ws write, remote %s:%d msg:%s\n", mRemoteIp.c_str(), mRemotePort, ec.message().c_str());
-            return;
+            return -1;
         }
     }
+    return 0;
 }
 
 void WsServerSslSession::on_write(beast::error_code ec, std::size_t bytes_transferred)
