@@ -136,8 +136,8 @@ void DelayedQueue<T>::erase(string taskId)
     auto list_it = it->second;
     bool is_notify = (list_it == mDelayedQueue.begin());
     Task task = std::move(*list_it);
-    mDelayedQueue.erase(list_it);
     mTaskMap.erase(it);
+    mDelayedQueue.erase(list_it);
     if (is_notify) {
         mCvR.notify_one();
     }
@@ -159,8 +159,8 @@ bool DelayedQueue<T>::pop(T& t)
             auto now = std::chrono::system_clock::now();
             if (ms <= now) {
                 t = std::move(task.t);
-                mDelayedQueue.pop_front();
                 mTaskMap.erase(task.taskId);
+                mDelayedQueue.pop_front();
                 mCvW.notify_one();
                 return true;
             }
@@ -182,14 +182,14 @@ bool DelayedQueue<T>::pop(T& t)
                     got = false;
                     break;
                 }
-                Task& task = mDelayedQueue.front();
+                task = mDelayedQueue.front();
                 ms = task.ms;
                 now = std::chrono::system_clock::now();
             }
             if (got) {
                 t = std::move(task.t);
-                mDelayedQueue.pop_front();
                 mTaskMap.erase(task.taskId);
+                mDelayedQueue.pop_front();
                 mCvW.notify_one();
                 return true;
             }
@@ -208,8 +208,8 @@ bool DelayedQueue<T>::tryPop(T& t)
         auto now = std::chrono::system_clock::now();
         if (ms <= now) {
             t = std::move(task.t);
-            mDelayedQueue.pop_front();
             mTaskMap.erase(task.taskId);
+            mDelayedQueue.pop_front();
             mCvW.notify_one();
             return true;
         }
