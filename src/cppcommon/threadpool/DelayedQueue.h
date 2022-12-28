@@ -160,6 +160,7 @@ bool DelayedQueue<T>::pop(T& t)
             if (ms <= now) {
                 t = std::move(task.t);
                 mDelayedQueue.pop_front();
+                mTaskMap.erase(task.taskId);
                 mCvW.notify_one();
                 return true;
             }
@@ -188,6 +189,7 @@ bool DelayedQueue<T>::pop(T& t)
             if (got) {
                 t = std::move(task.t);
                 mDelayedQueue.pop_front();
+                mTaskMap.erase(task.taskId);
                 mCvW.notify_one();
                 return true;
             }
@@ -207,6 +209,7 @@ bool DelayedQueue<T>::tryPop(T& t)
         if (ms <= now) {
             t = std::move(task.t);
             mDelayedQueue.pop_front();
+            mTaskMap.erase(task.taskId);
             mCvW.notify_one();
             return true;
         }
