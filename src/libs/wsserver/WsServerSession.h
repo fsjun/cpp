@@ -7,8 +7,8 @@ class WsServerSession : public std::enable_shared_from_this<WsServerSession>, pu
 public:
     WsServerSession(tcp::socket&& socket, WebSocketServerCb cb);
     void start();
-    virtual int do_write(string message, bool async = false);
-    virtual int do_write(char* data, int len, bool async = false);
+    virtual int do_write(string message, bool async = true);
+    virtual int do_write(char* data, int len, bool async = true);
     virtual string getRemoteIp();
     virtual int getRemotePort();
 
