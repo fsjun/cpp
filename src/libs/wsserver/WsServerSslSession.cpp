@@ -97,22 +97,22 @@ int WsServerSslSession::do_write(string message, bool async)
     INFO("wss send message, remote %s:%d message:%s\n", mRemoteIp.c_str(), mRemotePort, message.c_str());
     std::unique_lock<std::mutex> l(mMutex);
     if (async) {
+        shared_ptr<std::vector<char>> vec = make_shared<std::vector<char>>(message.begin(), message.end());
         if (isSend) {
             if (mQueue.size() >= mQueueSize) {
                 mCv.wait(l, [this]() { return mQueue.size() < mQueueSize; });
             }
             if (isSend) {
-                shared_ptr<std::vector<char>> vec = make_shared<std::vector<char>>(message.begin(), message.end());
                 mQueue.emplace_back(std::make_pair(false, vec));
             } else {
                 isSend = true;
                 mStream.text(true);
-                mStream.async_write(net::buffer(message), beast::bind_front_handler(&WsServerSslSession::on_write, shared_from_this()));
+                mStream.async_write(net::buffer(vec->data(), vec->size()), beast::bind_front_handler(&WsServerSslSession::on_write, shared_from_this(), vec));
             }
         } else {
             isSend = true;
             mStream.text(true);
-            mStream.async_write(net::buffer(message), beast::bind_front_handler(&WsServerSslSession::on_write, shared_from_this()));
+            mStream.async_write(net::buffer(vec->data(), vec->size()), beast::bind_front_handler(&WsServerSslSession::on_write, shared_from_this(), vec));
         }
     } else {
         mStream.text(true);
@@ -131,22 +131,22 @@ int WsServerSslSession::do_write(char* data, int len, bool async)
     DEBUG("wss send message, remote %s:%d\n", mRemoteIp.c_str(), mRemotePort);
     std::unique_lock<std::mutex> l(mMutex);
     if (async) {
+        shared_ptr<std::vector<char>> vec = make_shared<std::vector<char>>(data, data + len);
         if (isSend) {
             if (mQueue.size() >= mQueueSize) {
                 mCv.wait(l, [this]() { return mQueue.size() < mQueueSize; });
             }
             if (isSend) {
-                shared_ptr<std::vector<char>> vec = make_shared<std::vector<char>>(data, data + len);
                 mQueue.emplace_back(std::make_pair(true, vec));
             } else {
                 isSend = true;
                 mStream.binary(true);
-                mStream.async_write(net::buffer(data, len), beast::bind_front_handler(&WsServerSslSession::on_write, shared_from_this()));
+                mStream.async_write(net::buffer(vec->data(), vec->size()), beast::bind_front_handler(&WsServerSslSession::on_write, shared_from_this(), vec));
             }
         } else {
             isSend = true;
             mStream.binary(true);
-            mStream.async_write(net::buffer(data, len), beast::bind_front_handler(&WsServerSslSession::on_write, shared_from_this()));
+            mStream.async_write(net::buffer(vec->data(), vec->size()), beast::bind_front_handler(&WsServerSslSession::on_write, shared_from_this(), vec));
         }
     } else {
         mStream.binary(true);
@@ -160,7 +160,7 @@ int WsServerSslSession::do_write(char* data, int len, bool async)
     return 0;
 }
 
-void WsServerSslSession::on_write(beast::error_code ec, std::size_t bytes_transferred)
+void WsServerSslSession::on_write(shared_ptr<std::vector<char>> vec, beast::error_code ec, std::size_t bytes_transferred)
 {
     std::lock_guard<std::mutex> l(mMutex);
     isSend = false;
@@ -182,7 +182,7 @@ void WsServerSslSession::on_write(beast::error_code ec, std::size_t bytes_transf
         mStream.text(true);
     }
     isSend = true;
-    mStream.async_write(net::buffer(item->data(), item->size()), beast::bind_front_handler(&WsServerSslSession::on_write, shared_from_this()));
+    mStream.async_write(net::buffer(item->data(), item->size()), beast::bind_front_handler(&WsServerSslSession::on_write, shared_from_this(), item));
 }
 
 string WsServerSslSession::getRemoteIp()
