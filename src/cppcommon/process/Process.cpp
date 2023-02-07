@@ -18,6 +18,8 @@ int Process::System(string cmd, string& result)
         return ret;
     }
     auto vec = in_buf.get();
-    result = vec.data();
+    if (vec.size() > 0) {
+        result = vec.data();
+    }
     return ret;
 }
