@@ -1,0 +1,19 @@
+
+if(enable_encoding)
+
+set(MODULE_NAME encoding)
+file(GLOB_RECURSE SRC_LIST *.h *.cpp)
+#add_library(${MODULE_NAME} SHARED ${SRC_LIST})
+add_library(${MODULE_NAME} ${SRC_LIST})
+
+if(WIN32)
+TARGET_LINK_LIBRARIES(${MODULE_NAME} iconv)
+elseif(APPLE)
+TARGET_LINK_LIBRARIES(${MODULE_NAME} iconv)
+else()
+TARGET_LINK_LIBRARIES(${MODULE_NAME} iconv)
+endif()
+
+INSTALL(TARGETS ${MODULE_NAME} LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+
+endif()
