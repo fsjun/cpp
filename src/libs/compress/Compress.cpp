@@ -235,7 +235,7 @@ int Compress::Zip7z(string dir, string zipFileName)
 {
     string cmd = boost::str(boost::format("7z a -tzip -mmt -mx1 \"%s\" \"%s\"") % zipFileName % dir);
     string result;
-    int ret = Process::System(cmd, result);
+    int ret = Process::SystemGb18030(cmd, result);
     if (ret < 0) {
         ERR("cmd execute fail, cmd:%s result:%s\n", cmd.c_str(), result.c_str());
         return ret;
@@ -248,7 +248,7 @@ int Compress::UnZip7z(string zipFileName, string dir)
 {
     string cmd = boost::str(boost::format("7z x \"%s\" -o\"%s\"") % zipFileName % dir);
     string result;
-    int ret = Process::System(cmd, result);
+    int ret = Process::SystemGb18030(cmd, result);
     if (ret < 0) {
         ERR("cmd execute fail, cmd:%s result:%s\n", cmd.c_str(), result.c_str());
         return ret;

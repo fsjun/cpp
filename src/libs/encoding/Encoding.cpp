@@ -19,7 +19,7 @@ int Encoding::Convert(string from_code, string to_code, string src, string& dst)
     out_vec.resize(in_buf_size);
     while (true) {
         char* out_buf = out_vec.data();
-        size_t out_buf_size = out_vec.size();
+        size_t out_buf_size = out_vec.size() - 1;
         ret = iconv(h_iconv, &in_buf, &in_buf_size, &out_buf, &out_buf_size);
         if (ret < 0) {
             ret = errno;
@@ -33,6 +33,7 @@ int Encoding::Convert(string from_code, string to_code, string src, string& dst)
         }
         break;
     }
+    dst = out_vec.data();
     return 0;
 }
 

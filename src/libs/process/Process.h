@@ -4,4 +4,5 @@
 class Process {
 public:
     static int System(string cmd, string& result);
+    static int SystemGb18030(string cmd, string& result);
 };
