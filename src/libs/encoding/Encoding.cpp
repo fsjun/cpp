@@ -13,11 +13,11 @@ int Encoding::Convert(string from_code, string to_code, string src, string& dst)
     }
     Defer d([h_iconv]() { iconv_close(h_iconv); });
     int ret = 0;
-    char* in_buf = (char*)src.c_str();
-    size_t in_buf_size = src.size();
     vector<char> out_vec;
-    out_vec.resize(in_buf_size);
+    out_vec.resize(src.size()+1);
     while (true) {
+        char* in_buf = (char*)src.c_str();
+        size_t in_buf_size = src.size();
         char* out_buf = out_vec.data();
         size_t out_buf_size = out_vec.size() - 1;
         ret = iconv(h_iconv, &in_buf, &in_buf_size, &out_buf, &out_buf_size);
