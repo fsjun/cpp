@@ -20,7 +20,7 @@ int Process::System(string cmd, string& result)
     }
     auto vec = in_buf.get();
     if (vec.size() > 0) {
-        result = vec.data();
+        result = string(vec.data(), vec.size());
     }
     return ret;
 }
@@ -47,7 +47,7 @@ int Process::SystemGb18030(string cmd, string& result)
     }
     auto vec = in_buf.get();
     if (vec.size() > 0) {
-        string in_buf_str = vec.data();
+        string in_buf_str = string(vec.data(), vec.size());
         Encoding::Gb18030ToUtf8(in_buf_str, result);
     }
     return ret;
