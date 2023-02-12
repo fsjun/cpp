@@ -36,6 +36,9 @@ public:
     void destroy();
 
 private:
+    void do_erase(string taskId);
+
+private:
     struct Task {
         string taskId;
         std::chrono::time_point<std::chrono::system_clock> ms;
@@ -84,6 +87,7 @@ bool DelayedQueue<T>::push(string taskId, long duration_ms, T e)
     if (mQuit) {
         return false;
     }
+    do_erase(taskId);
     std::chrono::time_point<std::chrono::system_clock> ms = std::chrono::system_clock::now() + std::chrono::milliseconds(duration_ms);
     Task task = { taskId, ms, std::move(e) };
     auto it = std::upper_bound(mDelayedQueue.begin(), mDelayedQueue.end(), task, [](const Task& l, const Task& r) { return l.ms < r.ms; });
@@ -114,6 +118,7 @@ bool DelayedQueue<T>::tryPush(string taskId, long duration_ms, T e)
     if (mQuit || (mMaxSize > 0 && mQueue.size() + mDelayedQueue.size() >= mMaxSize)) {
         return false;
     }
+    do_erase(taskId);
     auto ms = std::chrono::system_clock::now() + std::chrono::milliseconds(duration_ms);
     Task task = { taskId, ms, std::move(e) };
     auto it = std::upper_bound(mDelayedQueue.begin(), mDelayedQueue.end(), task, [](const Task& l, const Task& r) { return l.ms < r.ms; });
@@ -129,6 +134,12 @@ template <typename T>
 void DelayedQueue<T>::erase(string taskId)
 {
     std::unique_lock<std::mutex> l(mMtx);
+    do_erase(taskId);
+}
+
+template <typename T>
+void DelayedQueue<T>::do_erase(string taskId)
+{
     auto it = mTaskMap.find(taskId);
     if (it == mTaskMap.end()) {
         return;
@@ -141,7 +152,7 @@ void DelayedQueue<T>::erase(string taskId)
     if (is_notify) {
         mCvR.notify_one();
     }
-    l.unlock();
+    mCvW.notify_one();
 }
 
 template <typename T>
@@ -250,7 +261,7 @@ void DelayedQueue<T>::clear(std::function<void(T t)> fn)
     }
     for (auto it = mDelayedQueue.begin(); it != mDelayedQueue.end();) {
         T e = std::move(it.t);
-        it = mQueue.erase(it);
+        it = mDelayedQueue.erase(it);
         if (fn) {
             fn(e);
         }
