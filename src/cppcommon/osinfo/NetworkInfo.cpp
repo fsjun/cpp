@@ -1,5 +1,22 @@
 #include "NetworkInfo.h"
+#include <iomanip>
 #include <regex>
+#include <sstream>
+
+std::shared_ptr<NetworkInfo::CardInfo> NetworkInfo::GetCardInfo()
+{
+    auto vec = GetAllCardInfo();
+    if (vec.empty()) {
+        return nullptr;
+    }
+    for (auto cardInfo : vec) {
+        string ip_str = cardInfo->ip;
+        if (!ip_str.empty() && ip_str != "0.0.0.0" && strncmp(ip_str.c_str(), "169.254", 7) != 0 && ip_str != "127.0.0.1") {
+            return cardInfo;
+        }
+    }
+    return nullptr;
+}
 
 string NetworkInfo::GetInterfaceIp()
 {
@@ -7,10 +24,108 @@ string NetworkInfo::GetInterfaceIp()
     if (vec.empty()) {
         return "";
     }
-    return vec[0];
+    for (string ip_str : vec) {
+        if (!ip_str.empty() && ip_str != "0.0.0.0" && strncmp(ip_str.c_str(), "169.254", 7) != 0 && ip_str != "127.0.0.1") {
+            return ip_str;
+        }
+    }
+    return "";
+}
+
+string NetworkInfo::GetInterfaceMac()
+{
+    auto vec = GetAllCardInfo();
+    if (vec.empty()) {
+        return "";
+    }
+    for (auto cardInfo : vec) {
+        string ip_str = cardInfo->ip;
+        if (!ip_str.empty() && ip_str != "0.0.0.0" && strncmp(ip_str.c_str(), "169.254", 7) != 0 && ip_str != "127.0.0.1") {
+            return cardInfo->mac;
+        }
+    }
+    return "";
 }
 
 #ifdef _WIN32
+vector<std::shared_ptr<NetworkInfo::CardInfo>> NetworkInfo::GetAllCardInfo()
+{
+    vector<std::shared_ptr<NetworkInfo::CardInfo>> vec;
+    PIP_ADAPTER_INFO pIpAdapterInfo = new IP_ADAPTER_INFO();
+    unsigned long stSize = sizeof(IP_ADAPTER_INFO);
+    string ip;
+    int nRel = GetAdaptersInfo(pIpAdapterInfo, &stSize);
+    DWORD netCardNum = 0;
+    GetNumberOfInterfaces(&netCardNum);
+    netCardNum = 0;
+    int IPnumPerNetCard = 0;
+    if (ERROR_BUFFER_OVERFLOW == nRel) {
+        delete pIpAdapterInfo;
+        pIpAdapterInfo = (PIP_ADAPTER_INFO) new BYTE[stSize];
+        nRel = GetAdaptersInfo(pIpAdapterInfo, &stSize);
+    }
+    if (ERROR_SUCCESS == nRel) {
+        PIP_ADAPTER_INFO orig = pIpAdapterInfo;
+        while (pIpAdapterInfo) {
+            switch (pIpAdapterInfo->Type) {
+            case MIB_IF_TYPE_OTHER:
+                // cout << "OTHER" << endl;
+                break;
+            case MIB_IF_TYPE_ETHERNET:
+                // cout << "ETHERNET" << endl;
+                break;
+            case MIB_IF_TYPE_TOKENRING:
+                // cout << "TOKENRING" << endl;
+                break;
+            case MIB_IF_TYPE_FDDI:
+                // cout << "FDDI" << endl;
+                break;
+            case MIB_IF_TYPE_PPP:
+                // cout << "PPP" << endl;
+                break;
+            case MIB_IF_TYPE_LOOPBACK:
+                // cout << "LOOPBACK" << endl;
+                break;
+            case MIB_IF_TYPE_SLIP:
+                // cout << "SLIP" << endl;
+                break;
+            default:
+                // cout << "" << endl;
+                break;
+            }
+            std::ostringstream oss;
+            for (DWORD i = 0; i < pIpAdapterInfo->AddressLength; i++) {
+                if (i < pIpAdapterInfo->AddressLength - 1) {
+                    oss << std::setfill('0') << std::setw(2) << std::hex << std::setiosflags(std::ios::uppercase) << int(pIpAdapterInfo->Address[i]) << "-";
+                } else {
+                    oss << std::setfill('0') << std::setw(2) << std::hex << std::setiosflags(std::ios::uppercase) << int(pIpAdapterInfo->Address[i]);
+                }
+            }
+            string mac = oss.str();
+            string gateway = pIpAdapterInfo->GatewayList.IpAddress.String;
+            IP_ADDR_STRING* pIpAddrString = &(pIpAdapterInfo->IpAddressList);
+            do {
+                auto cardInfo = std::make_shared<CardInfo>();
+                cardInfo->name = pIpAdapterInfo->AdapterName;
+                cardInfo->description = pIpAdapterInfo->Description;
+                cardInfo->ip = pIpAddrString->IpAddress.String;
+                cardInfo->mask = pIpAddrString->IpMask.String;
+                cardInfo->gateway = gateway;
+                cardInfo->mac = mac;
+                vec.emplace_back(cardInfo);
+                pIpAddrString = pIpAddrString->Next;
+            } while (pIpAddrString);
+            pIpAdapterInfo = pIpAdapterInfo->Next;
+            // cout << "--------------------------------------------------------------------" << endl;
+        }
+        pIpAdapterInfo = orig;
+    }
+    if (pIpAdapterInfo) {
+        delete pIpAdapterInfo;
+    }
+    return vec;
+}
+
 vector<string> NetworkInfo::GetAllInterfaceIp()
 {
     vector<string> vec;
@@ -70,9 +185,7 @@ vector<string> NetworkInfo::GetAllInterfaceIp()
                 // cout << "netmask：" << pIpAddrString->IpMask.String << endl;
                 // cout << "gateway：" << pIpAdapterInfo->GatewayList.IpAddress.String << endl;
                 string ip_str = pIpAddrString->IpAddress.String;
-                if (ip_str != "0.0.0.0" && strncmp(ip_str.c_str(), "169.254", 7) != 0 && ip_str != "127.0.0.1") {
-                    vec.emplace_back(ip_str);
-                }
+                vec.emplace_back(ip_str);
                 pIpAddrString = pIpAddrString->Next;
             } while (pIpAddrString);
             pIpAdapterInfo = pIpAdapterInfo->Next;
@@ -85,6 +198,12 @@ vector<string> NetworkInfo::GetAllInterfaceIp()
     return vec;
 }
 #else
+vector<std::shared_ptr<NetworkInfo::CardInfo>> NetworkInfo::GetAllCardInfo()
+{
+    vector<std::shared_ptr<NetworkInfo::CardInfo>> vec;
+    return vec;
+}
+
 vector<string> NetworkInfo::GetAllInterfaceIp()
 {
     vector<string> vec;
@@ -105,11 +224,11 @@ vector<string> NetworkInfo::GetAllInterfaceIp()
             inet_ntop(AF_INET, addr, addressBuffer, INET6_ADDRSTRLEN);
             INFO("%s IPv4 Address %s\n", ifAddrStruct->ifa_name, addressBuffer);
             long ip = (long)ntohl(addr->s_addr);
-            if (ip != 0x7f000001) {
-                char addressBuffer[INET_ADDRSTRLEN];
-                inet_ntop(AF_INET, addr, addressBuffer, INET_ADDRSTRLEN);
-                vec.emplace_back(addressBuffer);
-            }
+            // if (ip != 0x7f000001) {
+            char addressBuffer[INET_ADDRSTRLEN];
+            inet_ntop(AF_INET, addr, addressBuffer, INET_ADDRSTRLEN);
+            vec.emplace_back(addressBuffer);
+            //}
         } else if (ifAddrStruct->ifa_addr->sa_family == AF_INET6) { // check it is IP6
             // is a valid IP6 Address
             addr = &((struct sockaddr_in*)ifAddrStruct->ifa_addr)->sin_addr;
