@@ -2,7 +2,7 @@
 #include "log/Log.h"
 #include <filesystem>
 
-int FileSize::GetDiskSize(string path, uintmax_t capacity, uintmax_t free_size)
+int FileSize::GetDiskSize(string path, uintmax_t& capacity, uintmax_t& free_size)
 {
     std::error_code ec;
     std::filesystem::space_info sp = std::filesystem::space(path, ec);
