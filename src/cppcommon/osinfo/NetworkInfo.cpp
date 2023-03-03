@@ -225,9 +225,9 @@ vector<string> NetworkInfo::GetAllInterfaceIp()
             INFO("%s IPv4 Address %s\n", ifAddrStruct->ifa_name, addressBuffer);
             long ip = (long)ntohl(addr->s_addr);
             // if (ip != 0x7f000001) {
-            char addressBuffer[INET_ADDRSTRLEN];
-            inet_ntop(AF_INET, addr, addressBuffer, INET_ADDRSTRLEN);
-            vec.emplace_back(addressBuffer);
+            char addressBuffer2[INET_ADDRSTRLEN];
+            inet_ntop(AF_INET, addr, addressBuffer2, INET_ADDRSTRLEN);
+            vec.emplace_back(addressBuffer2);
             //}
         } else if (ifAddrStruct->ifa_addr->sa_family == AF_INET6) { // check it is IP6
             // is a valid IP6 Address
