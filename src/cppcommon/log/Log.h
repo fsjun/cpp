@@ -3,6 +3,7 @@
 #include "tools/Singleton.h"
 #include <condition_variable>
 #include <iostream>
+#include <format>
 #include <map>
 #include <mutex>
 #include <thread>
@@ -21,7 +22,7 @@
 #if LOGON == 0
 #define PRINT(module, level, format, ...)
 #elif LOGC == 0
-#define PRINT(level, format, ...) Log::Print(level, std::string(__FILE__) + std::string(":") + std::string(CT2STR(__LINE__)), format, ##__VA_ARGS__)
+#define PRINT(level, format, ...) Log::PrintT(false, level, std::string(__FILE__) + std::string(":") + std::string(CT2STR(__LINE__)), format, ##__VA_ARGS__)
 #else
 #define PRINT(level, format, ...) Log::Print(level, __FILE__, __LINE__, format, ##__VA_ARGS__)
 #endif
@@ -47,6 +48,7 @@ class ILogOutput {
 public:
     virtual ~ILogOutput() { }
     virtual void logFunc(LogLevel level, std::string prefix, std::string& fmt, va_list ap) = 0;
+    virtual void logFunc(bool isCrlf, LogLevel level, std::string prefix, std::string_view& fmt, std::format_args args) = 0;
     std::string uuid;
     LogLevel level;
 };
@@ -59,6 +61,11 @@ public:
     static void SetLogLevel(LogLevel level);
     static void Print(LogLevel level, char* file, int line, char* format, ...);
     static void Print(LogLevel level, std::string fileLine, std::string format, ...);
+    template <typename... Args>
+    static void PrintT(bool isCrlf, LogLevel level, std::string fileLine, std::string_view format, Args&&... args) {
+        Print(isCrlf, level, fileLine, format, std::make_format_args(args...));
+    }
+    static void Print(bool isCrlf, LogLevel level, std::string fileLine, std::string_view format, std::format_args args);
     static LogLevel StringToLevel(std::string level);
     static long GetTid();
 

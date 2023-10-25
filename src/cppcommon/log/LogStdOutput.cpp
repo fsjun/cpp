@@ -18,3 +18,14 @@ void LogStdOutput::logFunc(LogLevel level,std::string prefix, std::string &fmt, 
         fflush(stdout);
     }
 }
+
+void LogStdOutput::logFunc(bool isCrlf, LogLevel level, std::string prefix, std::string_view& fmt, std::format_args args)
+{
+    if (level <= this->level) {
+        if (isCrlf) {
+            std::cout << prefix << std::vformat(fmt, args) << std::endl;
+        } else {
+            std::cout << prefix << std::vformat(fmt, args) << std::flush;
+        }
+    }
+}

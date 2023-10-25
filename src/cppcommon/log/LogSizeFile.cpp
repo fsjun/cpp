@@ -39,6 +39,25 @@ void LogSizeFile::logFunc(LogLevel level, std::string prefix, std::string& fmt, 
     }
 }
 
+void LogSizeFile::logFunc(bool isCrlf, LogLevel level, std::string prefix, std::string_view& fmt, std::format_args args)
+{
+    if (level <= this->level) {
+        string content = std::vformat(fmt, args);
+        if (isCrlf) {
+            fprintf(mFp, "%s%s\n", prefix.c_str(), content.c_str());
+        } else {
+            fprintf(mFp, "%s%s", prefix.c_str(), content.c_str());
+        }
+        fflush(mFp);
+        long len = ftell(mFp);
+        if (mSize > 0 && len >= mSize) {
+            fclose(mFp);
+            rotate();
+            mFp = fopen(mFile.c_str(), "a");
+        }
+    }
+}
+
 void LogSizeFile::rotate()
 {
     if (mCount < 1) {

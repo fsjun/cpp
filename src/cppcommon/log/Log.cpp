@@ -155,6 +155,34 @@ void Log::Print(LogLevel level, std::string fileLine, std::string fmt, ...)
     }
 }
 
+
+void Log::Print(bool isCrlf, LogLevel level, std::string fileLine, std::string_view format, std::format_args args)
+{
+#if _WIN32
+    int pos = fileLine.find_last_of("\\");
+    if (pos != std::string::npos) {
+        fileLine = fileLine.substr(pos + 1);
+    }
+#else
+    int pos = fileLine.find_last_of("/");
+    if (pos != std::string::npos) {
+        fileLine = fileLine.substr(pos + 1);
+    }
+#endif
+    std::stringstream oss;
+    std::lock_guard<std::mutex> l(sMtx);
+    if (!sInstance) {
+        return;
+    }
+    std::string currentTime = Tools::LocalTimeMs();
+    oss << "[" << currentTime << " " << GetTid() << " " << fileLine << "] <" << LevelToString(level) << "> ";
+    sInstance->mStdOut->logFunc(isCrlf, level, oss.str(), format, args);
+    for (auto& it : sInstance->mOut) {
+        auto& out = it.second;
+        out->logFunc(isCrlf, level, oss.str(), format, args);
+    }
+}
+
 void Log::addLogOutput(std::string uuid, std::unique_ptr<ILogOutput>& out)
 {
     mOut.insert(std::pair<std::string, std::unique_ptr<ILogOutput>>(uuid, std::move(out)));
