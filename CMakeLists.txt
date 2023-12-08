@@ -20,7 +20,7 @@ endif()
 
 #set(CMAKE_CXX_STANDARD 11)
 #set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED on)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -72,13 +72,13 @@ LINK_DIRECTORIES(/usr/local/lib)
 
 elseif(LINUX)
 
-SET(CMAKE_INSTALL_PREFIX "/usr/local/3rd/cpp")
+SET(CMAKE_INSTALL_PREFIX "/opt/app/3rd/cpp")
 
 link_directories(/usr/lib64)
 
-include_directories(/root/app/vcpkg/installed/x64-linux/include)
-LINK_DIRECTORIES(/root/app/vcpkg/installed/x64-linux/debug/lib)
-LINK_DIRECTORIES(/root/app/vcpkg/installed/x64-linux/debug/lib/manual-link)
+include_directories(/opt/app/vcpkg/installed/x64-linux/include)
+LINK_DIRECTORIES(/opt/app/vcpkg/installed/x64-linux/debug/lib)
+LINK_DIRECTORIES(/opt/app/vcpkg/installed/x64-linux/debug/lib/manual-link)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -O0 -ggdb")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic")
