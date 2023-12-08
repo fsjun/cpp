@@ -109,7 +109,7 @@ void HttpClientSession::on_read(beast::error_code ec, std::size_t bytes_transfer
         return;
     }
     int code = mRes.result_int();
-    string reason = mRes.reason().to_string();
+    string reason = mRes.reason();
     string body = mRes.body();
     INFO("http success, url:%s code:%d reason:%s body:%s local %s:%d\n", mUrl.c_str(), code, reason.c_str(), body.c_str(), mLocalIp.c_str(), mLocalPort);
     mCb(true, code, reason, body);

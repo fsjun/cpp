@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <regex>
 #include <sstream>
+#include <string.h>
 
 std::shared_ptr<NetworkInfo::CardInfo> NetworkInfo::GetCardInfo()
 {
