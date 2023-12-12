@@ -61,8 +61,8 @@ int HttpServer::handleRequest(http::request<http::string_body>& req, any& resp)
             return ret;
         }
     }
-    auto uri = req.target();
-    string uri_str = uri.to_string();
+    string uri = req.target();
+    string uri_str = uri;
     int pos = uri_str.find_first_of('?');
     if (pos != string::npos) {
         uri_str = uri_str.substr(0, pos);

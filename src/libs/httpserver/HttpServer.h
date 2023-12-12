@@ -50,28 +50,28 @@ template <class Send>
 void handle_request(http::request<http::string_body>&& req, Send&& send, string address, shared_ptr<HttpServer>& server)
 {
     any resp;
-    auto method = req.method_string().to_string();
-    auto target = req.target().to_string();
+    string method = req.method_string();
+    string target = req.target();
     auto& body = req.body();
     INFO("receive req from %s, method:%s target:%s body:%s\n", address.c_str(), method.c_str(), target.c_str(), body.c_str());
     server->handleRequest(req, resp);
     if (resp.type() == typeid(http::response<http::empty_body>)) {
         auto res = any_cast<http::response<http::empty_body>>(resp);
         int code = res.result_int();
-        string reason = res.reason().to_string();
+        string reason = res.reason();
         INFO("send response to %s, code:%d reason:%s\n", address.c_str(), code, reason.c_str());
         send(std::move(res));
     } else if (resp.type() == typeid(http::response<http::string_body>)) {
         auto res = any_cast<http::response<http::string_body>>(resp);
         int code = res.result_int();
-        string reason = res.reason().to_string();
+        string reason = res.reason();
         string& body = res.body();
         INFO("send response to %s, code:%d reason:%s body:%s\n", address.c_str(), code, reason.c_str(), body.c_str());
         send(std::move(res));
     } else if (resp.type() == typeid(http::response<http::file_body>*)) {
         auto res = any_cast<http::response<http::file_body>*>(resp);
         int code = res->result_int();
-        string reason = res->reason().to_string();
+        string reason = res->reason();
         INFO("send response to %s, code:%d reason:%s file:...\n", address.c_str(), code, reason.c_str());
         send(std::move(*res));
         delete res;
@@ -79,7 +79,7 @@ void handle_request(http::request<http::string_body>&& req, Send&& send, string 
         http::response<http::empty_body> res { http::status::ok, req.version() };
         res.keep_alive(req.keep_alive());
         int code = res.result_int();
-        string reason = res.reason().to_string();
+        string reason = res.reason();
         INFO("send response to %s, code:%d reason:%s\n", address.c_str(), code, reason.c_str());
         send(std::move(res));
     }
