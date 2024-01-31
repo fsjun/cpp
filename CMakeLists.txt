@@ -75,7 +75,8 @@ elseif(LINUX)
 SET(CMAKE_INSTALL_PREFIX "/opt/app/3rd/cpp")
 
 link_directories(/usr/lib64)
-
+include_directories("/opt/app/3rd/pjsip/include")
+LINK_DIRECTORIES(/opt/app/3rd/pjsip/lib)
 include_directories(/opt/app/vcpkg/installed/x64-linux/include)
 LINK_DIRECTORIES(/opt/app/vcpkg/installed/x64-linux/debug/lib)
 LINK_DIRECTORIES(/opt/app/vcpkg/installed/x64-linux/debug/lib/manual-link)
@@ -106,6 +107,6 @@ set(enable_httpclient TRUE)
 set(enable_httpserver TRUE)
 set(enable_wsclient TRUE)
 set(enable_wsserver TRUE)
-#set(enable_sipserver TRUE)
+set(enable_sipserver TRUE)
 
 add_subdirectory(src)
