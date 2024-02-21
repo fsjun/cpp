@@ -25,7 +25,7 @@ void HttpClientSession::httpGet(string host, int port, string target, string que
     mReq.set(http::field::user_agent, HttpClient::GetUserAgent());
     mReq.set(http::field::accept, "*/*");
     mUrl = boost::str(boost::format("http://%s:%d%s%s") % host % port % target % query);
-    INFO("http get, url:%s\n", mUrl.c_str());
+    INFO("http get, url:{}\n", mUrl);
     // Look up the domain name
     mResolver.async_resolve(host, std::to_string(port), beast::bind_front_handler(&HttpClientSession::on_resolve, shared_from_this()));
 }
@@ -50,7 +50,7 @@ void HttpClientSession::httpPost(string host, int port, string target, string qu
         mReq.prepare_payload();
     }
     mUrl = boost::str(boost::format("http://%s:%d%s%s") % host % port % target % query);
-    INFO("http post, url:%s contentType:%s body:%s\n", mUrl.c_str(), contentType.c_str(), body.c_str());
+    INFO("http post, url:{} contentType:{} body:{}\n", mUrl, contentType, body);
     // Look up the domain name
     mResolver.async_resolve(host, std::to_string(port), beast::bind_front_handler(&HttpClientSession::on_resolve, shared_from_this()));
 }
@@ -58,7 +58,7 @@ void HttpClientSession::httpPost(string host, int port, string target, string qu
 void HttpClientSession::on_resolve(beast::error_code ec, tcp::resolver::results_type results)
 {
     if (ec) {
-        ERR("http resolve error, url:%s msg:%s\n", mUrl.c_str(), ec.message().c_str());
+        ERR("http resolve error, url:{} msg:{}\n", mUrl, ec.message());
         mCb(false, 500, "resolve", "");
         return;
     }
@@ -73,7 +73,7 @@ void HttpClientSession::on_resolve(beast::error_code ec, tcp::resolver::results_
 void HttpClientSession::on_connect(beast::error_code ec, tcp::resolver::results_type::endpoint_type)
 {
     if (ec) {
-        ERR("http connect error, url:%s msg:%s\n", mUrl.c_str(), ec.message().c_str());
+        ERR("http connect error, url:{} msg:{}\n", mUrl, ec.message());
         mCb(false, 500, "connect", "");
         return;
     }
@@ -88,7 +88,7 @@ void HttpClientSession::on_write(beast::error_code ec, std::size_t bytes_transfe
 {
     boost::ignore_unused(bytes_transferred);
     if (ec) {
-        ERR("http write error, url:%s local %s:%d msg:%s\n", mUrl.c_str(), mLocalIp.c_str(), mLocalPort, ec.message().c_str());
+        ERR("http write error, url:{} local {}:{} msg:{}\n", mUrl, mLocalIp, mLocalPort, ec.message());
         mCb(false, 500, "write", "");
         return;
     }
@@ -104,20 +104,20 @@ void HttpClientSession::on_read(beast::error_code ec, std::size_t bytes_transfer
         if (ec == http::error::end_of_stream) {
             do_close();
         }
-        ERR("http read error, url:%s local %s:%d msg:%s\n", mUrl.c_str(), mLocalIp.c_str(), mLocalPort, ec.message().c_str());
+        ERR("http read error, url:{} local {}:{} msg:{}\n", mUrl, mLocalIp, mLocalPort, ec.message());
         mCb(false, 500, "read", "");
         return;
     }
     int code = mRes.result_int();
     string reason = mRes.reason();
     string body = mRes.body();
-    INFO("http success, url:%s code:%d reason:%s body:%s local %s:%d\n", mUrl.c_str(), code, reason.c_str(), body.c_str(), mLocalIp.c_str(), mLocalPort);
+    INFO("http success, url:{} code:{} reason:{} body:{} local {}:{}\n", mUrl, code, reason, body, mLocalIp, mLocalPort);
     mCb(true, code, reason, body);
     // Gracefully close the socket
     mStream.socket().shutdown(tcp::socket::shutdown_both, ec);
     // not_connected happens sometimes so don't bother reporting it.
     if (ec && ec != beast::errc::not_connected) {
-        ERR("http shutdown error, url:%s local %s:%d msg:%s\n", mUrl.c_str(), mLocalIp.c_str(), mLocalPort, ec.message().c_str());
+        ERR("http shutdown error, url:{} local {}:{} msg:{}\n", mUrl, mLocalIp, mLocalPort, ec.message());
         return;
     }
     // If we get here then the connection is closed gracefully

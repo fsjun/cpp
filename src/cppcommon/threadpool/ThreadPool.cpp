@@ -76,10 +76,10 @@ void ThreadPool::workerThreadFunc() noexcept
         thread_func();
         thread_func = nullptr;
         // } catch (std::exception& e) {
-        //     ERR("thread pool exception: %s\n", e.what());
+        //     ERR("thread pool exception: {}\n", e.what());
         //     auto traceInfo = TraceInfo::GetAllTraceInfo();
         //     string traceStr = traceInfo->getBackTraceSymbols();
-        //     ERR("%s\n", traceStr.c_str());
+        //     ERR("{}\n", traceStr);
         // } catch (...) {
         //     ERR("state thread pool exception\n");
         // }

@@ -37,7 +37,7 @@ string BoostTimer::startTimer(string timerId, int seconds, function<void()> cb)
     weak_ptr<BoostTimer> weak = shared_from_this();
     auto timerCb = [timerId, weak, cb](const boost::system::error_code& ec) {
         if (ec) {
-            ERR("timer error, timerId:%s err:%s\n", timerId.c_str(), ec.message().c_str());
+            ERR("timer error, timerId:{} err:{}\n", timerId, ec.message());
             return;
         }
         auto self = weak.lock();

@@ -5,7 +5,7 @@
 // Report a failure
 static void fail(boost::system::error_code ec, char const* what)
 {
-    ERR("%s:%s\n", what, ec.message().c_str());
+    ERR("{}:{}\n", what, ec.message());
 }
 
 HttpSession::HttpSession(shared_ptr<boost::asio::io_context> ioc, shared_ptr<tcp::socket> socket, shared_ptr<HttpServer>& server)

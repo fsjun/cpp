@@ -46,7 +46,7 @@ int PermanentThreadPool::execute(string stateId, function<void()> task)
     }
     auto it = mTaskQueues.find(stateId);
     if (it == mTaskQueues.end()) {
-        ERR("permanent thread is not exist when execute, stateId:%s\n", stateId.c_str());
+        ERR("permanent thread is not exist when execute, stateId:{}\n", stateId.c_str());
         mOwner = 0;
         return -1;
     }
@@ -68,18 +68,18 @@ int PermanentThreadPool::startThread(string stateId)
     auto it = mTaskQueues.find(stateId);
     if (it != mTaskQueues.end()) {
         mOwner = 0;
-        WARN("permanent thread is exist when start thread, stateId:%s\n", stateId.c_str());
+        WARN("permanent thread is exist when start thread, stateId:{}\n", stateId.c_str());
         return 0;
     }
     if (mMaxThreadSize > 0 && mCurrThreadSize >= mMaxThreadSize) {
         mOwner = 0;
-        ERR("permanent thread pool exceed max, current:%d max %d\n", mCurrThreadSize, mMaxThreadSize);
+        ERR("permanent thread pool exceed max, current:{} max {}\n", mCurrThreadSize, mMaxThreadSize);
         return -1;
     }
     auto iter = mThreads.find(stateId);
     if (iter != mThreads.end()) {
         mOwner = 0;
-        ERR("task queue not exist, but thread is exist, stateId:%s\n", stateId.c_str());
+        ERR("task queue not exist, but thread is exist, stateId:{}\n", stateId.c_str());
         return -1;
     }
     ++mCurrThreadSize;
@@ -103,7 +103,7 @@ void PermanentThreadPool::stopThread(string stateId)
     auto it = mTaskQueues.find(stateId);
     if (it == mTaskQueues.end()) {
         mOwner = 0;
-        WARN("permanent thread is not exist when stop thread, stateId:%s\n", stateId.c_str());
+        WARN("permanent thread is not exist when stop thread, stateId:{}\n", stateId.c_str());
         return;
     }
     auto queue = it->second;
@@ -161,10 +161,10 @@ void PermanentThreadPool::workerThreadFunc(string stateId) noexcept
         thread_func();
         thread_func = nullptr;
         // } catch (std::exception& e) {
-        //     ERR("permanent thread pool exception: %s\n", e.what());
+        //     ERR("permanent thread pool exception: {}\n", e.what());
         //     auto traceInfo = TraceInfo::GetAllTraceInfo();
         //     string traceStr = traceInfo->getBackTraceSymbols();
-        //     ERR("%s\n", traceStr.c_str());
+        //     ERR("{}\n", traceStr);
         // } catch (...) {
         //     ERR("permanent thread pool exception\n");
         // }

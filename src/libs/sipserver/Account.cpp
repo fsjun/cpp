@@ -115,7 +115,7 @@ void Account::regcCb(struct pjsip_regc_cbparam* param)
         /* Stop keep-alive timer if any. */
         update_keep_alive(PJ_FALSE, nullptr);
     } else if (param->code < 0 || param->code >= 300) {
-        INFO("SIP registration failed, status=%d (%.*s)\n", param->code, param->reason.slen, param->reason.ptr);
+        INFO("SIP registration failed, status={} ({:.{}})\n", param->code, param->reason.ptr, param->reason.slen);
         pjsip_regc_destroy(mRegc);
         mRegc = nullptr;
         /* Stop keep-alive timer if any. */
@@ -126,14 +126,14 @@ void Account::regcCb(struct pjsip_regc_cbparam* param)
             mRegc = nullptr;
             /* Stop keep-alive timer if any. */
             update_keep_alive(PJ_FALSE, nullptr);
-            INFO("%s: unregistration success\n", mUser.c_str());
+            INFO("{}: unregistration success\n", mUser);
         } else {
-            INFO("%s: registration success, status=%d (%.*s), will re-register in %d seconds\n", mUri.c_str(), param->code, param->reason.slen, param->reason.ptr, param->expiration);
+            INFO("{}: registration success, status={} ({:.{}}), will re-register in {} seconds\n", mUri, param->code, param->reason.ptr, param->reason.slen, param->expiration);
             /* Start keep-alive timer if necessary. */
             update_keep_alive(PJ_TRUE, param);
         }
     } else {
-        INFO("SIP registration updated status=%d\n", param->code);
+        INFO("SIP registration updated status={}\n", param->code);
     }
     auto cb = mCb;
     if (cb) {
@@ -188,7 +188,7 @@ void Account::update_keep_alive(pj_bool_t start, struct pjsip_regc_cbparam* para
             pjsip_tx_data* req;
 
             tsx = pjsip_rdata_get_tsx(param->rdata);
-            PJ_ASSERT_ON_FAIL(tsx, return );
+            PJ_ASSERT_ON_FAIL(tsx, return);
 
             req = tsx->last_tx;
 
@@ -212,7 +212,7 @@ void Account::update_keep_alive(pj_bool_t start, struct pjsip_regc_cbparam* para
         pj_str_t input_str = pj_str(param->rdata->pkt_info.src_name);
         mKaTimer.id = PJ_TRUE;
         pj_addr_str_print(&input_str, param->rdata->pkt_info.src_port, addr, sizeof(addr), 1);
-        INFO("Keep-alive timer started for acc %s, destination:%s, interval:%ds\n", mUri.c_str(), addr, mKaInterval);
+        INFO("Keep-alive timer started for acc {}, destination:{}, interval:{}s\n", mUri, addr, mKaInterval);
     }
 }
 
@@ -246,7 +246,7 @@ void Account::keepAliveTimerCb(pj_timer_heap_t* th, pj_timer_entry* te)
     tp_sel.type = PJSIP_TPSELECTOR_TRANSPORT;
     tp_sel.u.transport = mEndpoint->mTransport;
 
-    DEBUG("Sending %d bytes keep-alive packet for acc %s to %s\n", mKaData.size(), mUser.c_str(), pj_sockaddr_print(&mKaTarget, addrtxt, sizeof(addrtxt), 3));
+    DEBUG("Sending {} bytes keep-alive packet for acc {} to {}\n", mKaData.size(), mUser, pj_sockaddr_print(&mKaTarget, addrtxt, sizeof(addrtxt), 3));
 
     /* Send raw packet */
     status = pjsip_tpmgr_send_raw(pjsip_endpt_get_tpmgr(mEndpoint->mEndpt), PJSIP_TRANSPORT_UDP, &tp_sel, nullptr, mKaData.c_str(), mKaData.size(), &mKaTarget, mKaTargetLen, nullptr, nullptr);

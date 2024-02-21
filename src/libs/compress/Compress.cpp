@@ -24,7 +24,7 @@ int AddFileToZip(zipFile zFile, const string& fileName, const string& fileNameIn
         ERR("zipOpenNewFileInZip3_64 failed\n");
         return -1;
     }
-    DEBUG("begin write file, fileName:%s fileNameInZip:%s\n", fileName.c_str(), fileNameInZip.c_str());
+    DEBUG("begin write file, fileName:{} fileNameInZip:{}\n", fileName, fileNameInZip);
     std::fstream ifs(fileName.c_str(), std::ios::binary | std::ios::in);
     char buff[1024] = { 0 };
     int size = sizeof(buff);
@@ -35,17 +35,17 @@ int AddFileToZip(zipFile zFile, const string& fileName, const string& fileNameIn
         if (gcount > 0) {
             ret = zipWriteInFileInZip(zFile, buff, gcount);
             if (ZIP_OK != ret) {
-                ERR("zipWriteInFileInZip error, ret:%d\n", ret);
+                ERR("zipWriteInFileInZip error, ret:{}\n", ret);
                 ret = -1;
                 break;
             }
         }
     } while (gcount == size);
     ifs.close();
-    DEBUG("end write file, fileName:%s fileNameInZip:%s\n", fileName.c_str(), fileNameInZip.c_str());
+    DEBUG("end write file, fileName:{} fileNameInZip:{}\n", fileName, fileNameInZip);
     int res = zipCloseFileInZip(zFile);
     if (ZIP_OK != res) {
-        ERR("zipCloseFileInZip error, res:%d\n", res);
+        ERR("zipCloseFileInZip error, res:{}\n", res);
         return -1;
     }
     return ret;
@@ -63,7 +63,7 @@ int AddDirToZip(zipFile zFile, const string& fileNameInZip)
     }
     int res = zipCloseFileInZip(zFile);
     if (ZIP_OK != res) {
-        ERR("zipCloseFileInZip error, res:%d\n", res);
+        ERR("zipCloseFileInZip error, res:{}\n", res);
         return -1;
     }
     return ret;
@@ -92,7 +92,7 @@ int Compress::Zip(string dir, string zipFileName)
     vector<string> fileVec;
     EnumDirFiles(dir, fileVec);
     if (fileVec.empty()) {
-        ERR("%s has no file\n", dir.c_str());
+        ERR("{} has no file\n", dir);
         return -1;
     }
     zipFile zFile = zipOpen64(zipFileName.c_str(), APPEND_STATUS_CREATE);
@@ -103,7 +103,7 @@ int Compress::Zip(string dir, string zipFileName)
     Defer d([zFile]() {
         int ret = zipClose(zFile, NULL);
         if (ZIP_OK != ret) {
-            ERR("zipClose error, ret:%d\n", ret);
+            ERR("zipClose error, ret:{}\n", ret);
         }
     });
     int ret = 0;
@@ -141,7 +141,7 @@ int Compress::UnZip(string zipFileName, string dir)
     }
     unzFile unzfile = unzOpen64(zipFileName.c_str());
     if (unzfile == NULL) {
-        ERR("unzOpen64 failed, fileName:%s\n", zipFileName.c_str());
+        ERR("unzOpen64 failed, fileName:{}\n", zipFileName);
         return -1;
     }
     Defer d([unzfile]() {
@@ -201,7 +201,7 @@ int Compress::GetFirstNodeName(string zipFileName, string& fileName)
     int ret = 0;
     unzFile unzfile = unzOpen64(zipFileName.c_str());
     if (unzfile == NULL) {
-        ERR("unzOpen64 failed, fileName:%s\n", zipFileName.c_str());
+        ERR("unzOpen64 failed, fileName:{}\n", zipFileName);
         return -1;
     }
     Defer d([unzfile]() {
@@ -237,10 +237,10 @@ int Compress::Zip7z(string dir, string zipFileName)
     string result;
     int ret = Process::SystemGb18030(cmd, result);
     if (ret < 0) {
-        ERR("cmd execute fail, cmd:%s result:%s\n", cmd.c_str(), result.c_str());
+        ERR("cmd execute fail, cmd:{} result:{}\n", cmd, result);
         return ret;
     }
-    DEBUG("\n%s\n%s\n", cmd.c_str(), result.c_str());
+    DEBUG("\n{}\n{}\n", cmd, result);
     return ret;
 }
 
@@ -250,10 +250,10 @@ int Compress::UnZip7z(string zipFileName, string dir)
     string result;
     int ret = Process::SystemGb18030(cmd, result);
     if (ret < 0) {
-        ERR("cmd execute fail, cmd:%s result:%s\n", cmd.c_str(), result.c_str());
+        ERR("cmd execute fail, cmd:{} result:{}\n", cmd, result);
         return ret;
     }
-    DEBUG("\n%s\n%s\n", cmd.c_str(), result.c_str());
+    DEBUG("\n{}\n{}\n", cmd, result);
     return 0;
 }
 
@@ -263,21 +263,21 @@ int Compress::GetFirstNodeName7z(string zipFileName, string& fileName)
     string result;
     int ret = Process::System(cmd, result);
     if (ret < 0) {
-        ERR("cmd execute fail, cmd:%s result:%s\n", cmd.c_str(), result.c_str());
+        ERR("cmd execute fail, cmd:{} result:{}\n", cmd, result);
         return ret;
     }
-    DEBUG("\n%s\n%s\n", cmd.c_str(), result.c_str());
+    DEBUG("\n{}\n{}\n", cmd, result);
     vector<string> lineVec;
     boost::split(lineVec, result, boost::is_any_of("\r\n"), boost::token_compress_on);
     if (lineVec.size() < 14) {
-        ERR("result has no file, cmd:%s result:%s\n", cmd.c_str(), result.c_str());
+        ERR("result has no file, cmd:{} result:{}\n", cmd, result);
         return -1;
     }
     string fileStr = lineVec[13];
     vector<string> fileVec;
     boost::split(fileVec, fileStr, boost::is_any_of(" "), boost::token_compress_on);
     if (fileStr.size() < 1) {
-        ERR("fileStr has no file path, fileStr:%s\n", fileStr.c_str());
+        ERR("fileStr has no file path, fileStr:{}\n", fileStr);
         return -1;
     }
     fileName = fileVec.back();

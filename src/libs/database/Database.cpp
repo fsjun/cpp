@@ -27,7 +27,7 @@ int Database::connect()
         }
         ret = 0;
     } catch (std::exception& e) {
-        ERR("exception on connect mysql: %s\n", e.what());
+        ERR("exception on connect mysql: {}\n", e.what());
         mSession.reset();
     } catch (...) {
         ERR("exception on connect mysql\n");
@@ -58,7 +58,7 @@ int Database::insert(string sql, std::vector<std::string> params)
         mysqlx::SqlResult res = sqlStatement.execute();
         id = res.getAutoIncrementValue();
     } catch (std::exception& e) {
-        ERR("sql exception: %s\n", e.what());
+        ERR("sql exception: {}\n", e.what());
         mSession.reset();
     } catch (...) {
         ERR("sql exception\n");
@@ -89,7 +89,7 @@ int Database::execSql(string sql, std::vector<std::string> params)
         mysqlx::SqlResult res = sqlStatement.execute();
         count = res.getAffectedItemsCount();
     } catch (std::exception& e) {
-        ERR("sql exception: %s\n", e.what());
+        ERR("sql exception: {}\n", e.what());
         mSession.reset();
     } catch (...) {
         ERR("sql exception\n");
@@ -166,7 +166,7 @@ int Database::execSql(std::string sql, std::vector<std::string> params, std::vec
             result.emplace_back(po);
         }
     } catch (std::exception& e) {
-        ERR("exception on query mysql: %s\n", e.what());
+        ERR("exception on query mysql: {}\n", e.what());
         mSession.reset();
     } catch (...) {
         ERR("exception on query mysql\n");

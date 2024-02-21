@@ -62,19 +62,19 @@ int ImService::sendMessage(string from, string to, string callId, string target_
      */
     /*
     if (acc->contact.slen) {
-	contact = acc->contact;
+        contact = acc->contact;
     } else {
-	status = pjsua_acc_create_uac_contact(tdata->pool, &contact, acc_id, to);
-	if (status != PJ_SUCCESS) {
-	    pjsua_perror(THIS_FILE, "Unable to generate Contact header", status);
-	    pjsip_tx_data_dec_ref(tdata);
-	    return status;
-	}
+        status = pjsua_acc_create_uac_contact(tdata->pool, &contact, acc_id, to);
+        if (status != PJ_SUCCESS) {
+            pjsua_perror(THIS_FILE, "Unable to generate Contact header", status);
+            pjsip_tx_data_dec_ref(tdata);
+            return status;
+        }
     }
 
     pjsip_msg_add_hdr( tdata->msg, (pjsip_hdr*)
-	pjsip_generic_string_hdr_create(tdata->pool,
-					&STR_CONTACT, &contact));
+        pjsip_generic_string_hdr_create(tdata->pool,
+                                        &STR_CONTACT, &contact));
     */
 
     /* Add message body */
@@ -144,19 +144,19 @@ int ImService::sendOptions(string from, string to, string callId, string target_
      */
     /*
     if (acc->contact.slen) {
-	contact = acc->contact;
+        contact = acc->contact;
     } else {
-	status = pjsua_acc_create_uac_contact(tdata->pool, &contact, acc_id, to);
-	if (status != PJ_SUCCESS) {
-	    pjsua_perror(THIS_FILE, "Unable to generate Contact header", status);
-	    pjsip_tx_data_dec_ref(tdata);
-	    return status;
-	}
+        status = pjsua_acc_create_uac_contact(tdata->pool, &contact, acc_id, to);
+        if (status != PJ_SUCCESS) {
+            pjsua_perror(THIS_FILE, "Unable to generate Contact header", status);
+            pjsip_tx_data_dec_ref(tdata);
+            return status;
+        }
     }
 
     pjsip_msg_add_hdr( tdata->msg, (pjsip_hdr*)
-	pjsip_generic_string_hdr_create(tdata->pool,
-					&STR_CONTACT, &contact));
+        pjsip_generic_string_hdr_create(tdata->pool,
+                                        &STR_CONTACT, &contact));
     */
 
     /* Add message body */
@@ -202,7 +202,7 @@ void ImService::imCallback(void* token, pjsip_event* e)
                 body = string((char*)rdata->msg_info.msg->body->data, rdata->msg_info.msg->body->len);
             }
         }
-        INFO("receive response callId:%s code:%d reason:%s body:%s\n", callId.c_str(), code, reason.c_str(), body.c_str());
+        INFO("receive response callId:{} code:{} reason:{} body:{}\n", callId, code, reason, body);
         auto imListener = getImListener();
         if (imListener) {
             imListener->on_rx_response(callId, code, reason, body);
@@ -226,7 +226,7 @@ void ImService::on_message(pjsip_rx_data* rdata)
     string method(rdata->msg_info.msg->line.req.method.name.ptr, rdata->msg_info.msg->line.req.method.name.slen);
     string callId = string(rdata->msg_info.cid->id.ptr, rdata->msg_info.cid->id.slen);
     string body = string((char*)rdata->msg_info.msg->body->data, rdata->msg_info.msg->body->len);
-    INFO("receive request callId:%s method:%s body:%s\n", callId.c_str(), method.c_str(), body.c_str());
+    INFO("receive request callId:{} method:{} body:{}\n", callId, method, body);
     auto imListener = getImListener();
     if (imListener) {
         imListener->on_rx_request(callId, method, body);
@@ -249,7 +249,7 @@ void ImService::on_info(pjsip_rx_data* rdata)
     string method(rdata->msg_info.msg->line.req.method.name.ptr, rdata->msg_info.msg->line.req.method.name.slen);
     string callId = string(rdata->msg_info.cid->id.ptr, rdata->msg_info.cid->id.slen);
     string body = string((char*)rdata->msg_info.msg->body->data, rdata->msg_info.msg->body->len);
-    INFO("receive request callId:%s method:%s body:%s\n", callId.c_str(), method.c_str(), body.c_str());
+    INFO("receive request callId:{} method:{} body:{}\n", callId, method, body);
     auto imListener = getImListener();
     if (imListener) {
         imListener->on_rx_request(callId, method, body);

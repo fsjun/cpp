@@ -6,7 +6,7 @@
 // Report a failure
 static void fail(boost::system::error_code ec, char const* what)
 {
-    ERR("%s:%s\n", what, ec.message().c_str());
+    ERR("{}:{}\n", what, ec.message());
 }
 
 HttpSyncListener::HttpSyncListener(boost::asio::io_context& ioc, ssl::context& ctx, bool sslEnable, tcp::endpoint endpoint, shared_ptr<HttpServer>& server)

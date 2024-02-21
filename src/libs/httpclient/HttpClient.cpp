@@ -27,7 +27,7 @@ int HttpClient::httpGet(string url_s, HttpClientCb cb)
         auto httpSslSession = make_shared<HttpClientSslSession>(mIoContext, ctx, cb);
         httpSslSession->httpGet(url.host, url.port, url.path, url.query);
     } else {
-        ERR("invalid http url, url:%s", url_s.c_str());
+        ERR("invalid http url, url:{}", url_s);
         return -1;
     }
     return 0;
@@ -49,7 +49,7 @@ int HttpClient::httpPost(string url_s, string contentType, string body, HttpClie
         auto httpSslSession = make_shared<HttpClientSslSession>(mIoContext, ctx, cb);
         httpSslSession->httpPost(url.host, url.port, url.path, url.query, contentType, body);
     } else {
-        ERR("invalid http url, url:%s", url_s.c_str());
+        ERR("invalid http url, url:{}", url_s);
         return -1;
     }
     return 0;

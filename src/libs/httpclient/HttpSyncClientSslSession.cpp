@@ -35,25 +35,25 @@ int HttpSyncClientSslSession::connect()
     boost::system::error_code ec;
     auto const results = resolver.resolve(mHost.c_str(), port.c_str(), ec);
     if (ec) {
-        ERR("resolve error, host:%s port:%s msg:%s\n", mHost.c_str(), port.c_str(), ec.message().c_str());
+        ERR("resolve error, host:{} port:{} msg:{}\n", mHost, port, ec.message());
         return -1;
     }
     mStream = std::make_unique<beast::ssl_stream<beast::tcp_stream>>(mIoc, ctx);
     // Set SNI Hostname (many hosts need this to handshake successfully)
     if (!SSL_set_tlsext_host_name(mStream->native_handle(), mHost.c_str())) {
         beast::error_code ec { static_cast<int>(::ERR_get_error()), net::error::get_ssl_category() };
-        ERR("SSL_set_tlsext_host_name error, host:%s port:%s msg:%s\n", mHost.c_str(), port.c_str(), ec.message().c_str());
+        ERR("SSL_set_tlsext_host_name error, host:{} port:{} msg:{}\n", mHost, port, ec.message());
         return -1;
     }
     beast::get_lowest_layer(*mStream).connect(results, ec);
     if (ec) {
-        ERR("connect error, host:%s port:%s msg:%s\n", mHost.c_str(), port.c_str(), ec.message().c_str());
+        ERR("connect error, host:{} port:{} msg:{}\n", mHost, port, ec.message());
         return -1;
     }
     // Perform the SSL handshake
     mStream->handshake(ssl::stream_base::client, ec);
     if (ec) {
-        ERR("handshake error, host:%s port:%s msg:%s\n", mHost.c_str(), port.c_str(), ec.message().c_str());
+        ERR("handshake error, host:{} port:{} msg:{}\n", mHost, port, ec.message());
         return -1;
     }
     return 0;
@@ -67,7 +67,7 @@ void HttpSyncClientSslSession::close()
     beast::error_code ec;
     mStream->shutdown(ec);
     if (ec) {
-        ERR("close error, host:%s port:%d msg:%s\n", mHost.c_str(), mPort, ec.message().c_str());
+        ERR("close error, host:{} port:{} msg:{}\n", mHost, mPort, ec.message());
     }
     mStream.reset();
 }
@@ -99,11 +99,11 @@ int HttpSyncClientSslSession::httpGet(string path, vector<map<string, string>> h
     int code = res.result_int();
     string reason = res.reason();
     if (code / 100 != 2) {
-        ERR("http fail, path:%s code:%d reason:%s\n", path.c_str(), code, reason.c_str());
+        ERR("http fail, path:{} code:{} reason:{}\n", path, code, reason);
         return -1;
     }
     body = res.body();
-    INFO("http success, path:%s code:%d reason:%s body:%s\n", path.c_str(), code, reason.c_str(), body.c_str());
+    INFO("http success, path:{} code:{} reason:{} body:{}\n", path, code, reason, body);
     return 0;
 }
 
@@ -141,11 +141,11 @@ int HttpSyncClientSslSession::httpPost(string path, vector<map<string, string>> 
     int code = res.result_int();
     string reason = res.reason();
     if (code / 100 != 2) {
-        ERR("http fail, path:%s code:%d reason:%s\n", path.c_str(), code, reason.c_str());
+        ERR("http fail, path:{} code:{} reason:{}\n", path, code, reason);
         return -1;
     }
     body = res.body();
-    INFO("http success, path:%s content:%s code:%d reason:%s body:%s\n", path.c_str(), content.c_str(), code, reason.c_str(), body.c_str());
+    INFO("http success, path:{} content:{} code:{} reason:{} body:{}\n", path, content, code, reason, body);
     return 0;
 }
 
@@ -183,11 +183,11 @@ int HttpSyncClientSslSession::httpMethod(string path, boost::beast::http::verb m
     int code = res.result_int();
     string reason = res.reason();
     if (code / 100 != 2) {
-        ERR("http fail, path:%s code:%d reason:%s\n", path.c_str(), code, reason.c_str());
+        ERR("http fail, path:{} code:{} reason:{}\n", path, code, reason);
         return -1;
     }
     body = res.body();
-    INFO("http success, path:%s content:%s code:%d reason:%s body:%s\n", path.c_str(), content.c_str(), code, reason.c_str(), body.c_str());
+    INFO("http success, path:{} content:{} code:{} reason:{} body:{}\n", path, content, code, reason, body);
     return 0;
 }
 

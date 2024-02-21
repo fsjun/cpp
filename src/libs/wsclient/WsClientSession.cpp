@@ -21,7 +21,7 @@ void WsClientSession::start()
 
 void WsClientSession::do_write(string message, bool async)
 {
-    INFO("ws write, remote %s:%d local %s:%d message:%s\n", mRemoteIp.c_str(), mRemotePort, mLocalIp.c_str(), mLocalPort, message.c_str());
+    INFO("ws write, remote {}:{} local {}:{} message:{}\n", mRemoteIp, mRemotePort, mLocalIp, mLocalPort, message);
     mStream.text(true);
     if (async) {
         // Send the message
@@ -30,7 +30,7 @@ void WsClientSession::do_write(string message, bool async)
         beast::error_code ec;
         mStream.write(net::buffer(message), ec);
         if (ec) {
-            ERR("error ws write, remote %s:%d local %s:%d, msg:%s\n", mRemoteIp.c_str(), mRemotePort, mLocalIp.c_str(), mLocalPort, ec.message().c_str());
+            ERR("error ws write, remote {}:{} local {}:{}, msg:{}\n", mRemoteIp, mRemotePort, mLocalIp, mLocalPort, ec.message());
             return;
         }
     }
@@ -38,7 +38,7 @@ void WsClientSession::do_write(string message, bool async)
 
 void WsClientSession::do_write(char* data, int len, bool async)
 {
-    DEBUG("ws write, remote %s:%d local %s:%d\n", mRemoteIp.c_str(), mRemotePort, mLocalIp.c_str(), mLocalPort);
+    DEBUG("ws write, remote {}:{} local {}:{}\n", mRemoteIp, mRemotePort, mLocalIp, mLocalPort);
     mStream.binary(true);
     if (async) {
         // Send the message
@@ -47,7 +47,7 @@ void WsClientSession::do_write(char* data, int len, bool async)
         beast::error_code ec;
         mStream.write(net::buffer(data, len), ec);
         if (ec) {
-            ERR("error ws write, remote %s:%d local %s:%d, msg:%s\n", mRemoteIp.c_str(), mRemotePort, mLocalIp.c_str(), mLocalPort, ec.message().c_str());
+            ERR("error ws write, remote {}:{} local {}:{}, msg:{}\n", mRemoteIp, mRemotePort, mLocalIp, mLocalPort, ec.message());
             return;
         }
     }
@@ -57,7 +57,7 @@ void WsClientSession::on_write(beast::error_code ec, std::size_t bytes_transferr
 {
     boost::ignore_unused(bytes_transferred);
     if (ec) {
-        ERR("error ws write, remote %s:%d local %s:%d, msg:%s\n", mRemoteIp.c_str(), mRemotePort, mLocalIp.c_str(), mLocalPort, ec.message().c_str());
+        ERR("error ws write, remote {}:{} local {}:{}, msg:{}\n", mRemoteIp, mRemotePort, mLocalIp, mLocalPort, ec.message());
         return;
     }
 }
@@ -65,7 +65,7 @@ void WsClientSession::on_write(beast::error_code ec, std::size_t bytes_transferr
 void WsClientSession::on_resolve(beast::error_code ec, tcp::resolver::results_type results)
 {
     if (ec) {
-        ERR("error ws resolve, remote %s:%d, msg:%s\n", mHost.c_str(), mRemotePort, mLocalIp.c_str(), mLocalPort, ec.message().c_str());
+        ERR("error ws resolve, remote {}:{}, msg:{}\n", mHost, mRemotePort, mLocalIp, mLocalPort, ec.message());
         mCb(shared_from_this(), WS_CLIENT_ERROR, nullptr, 0);
         return;
     }
@@ -79,7 +79,7 @@ void WsClientSession::on_resolve(beast::error_code ec, tcp::resolver::results_ty
 void WsClientSession::on_connect(beast::error_code ec, tcp::resolver::results_type::endpoint_type type)
 {
     if (ec) {
-        ERR("error ws connect, remote %s:%d, msg:%s\n", mRemoteIp.c_str(), mRemotePort, ec.message().c_str());
+        ERR("error ws connect, remote {}:{}, msg:{}\n", mRemoteIp, mRemotePort, ec.message());
         mCb(shared_from_this(), WS_CLIENT_ERROR, nullptr, 0);
         return;
     }
@@ -107,7 +107,7 @@ void WsClientSession::on_connect(beast::error_code ec, tcp::resolver::results_ty
 void WsClientSession::on_handshake(beast::error_code ec)
 {
     if (ec) {
-        ERR("error ws handshake, remote %s:%d local %s:%d msg:%s\n", mRemoteIp.c_str(), mRemotePort, mLocalIp.c_str(), mLocalPort, ec.message().c_str());
+        ERR("error ws handshake, remote {}:{} local {}:{} msg:{}\n", mRemoteIp, mRemotePort, mLocalIp, mLocalPort, ec.message());
         mCb(shared_from_this(), WS_CLIENT_ERROR, nullptr, 0);
         return;
     }
@@ -127,12 +127,12 @@ void WsClientSession::on_read(beast::error_code ec, std::size_t bytes_transferre
     boost::ignore_unused(bytes_transferred);
     // This indicates that the session was closed
     if (ec == websocket::error::closed) {
-        INFO("close ws, remote %s:%d local %s:%d msg:%s\n", mRemoteIp.c_str(), mRemotePort, mLocalIp.c_str(), mLocalPort, ec.message().c_str());
+        INFO("close ws, remote {}:{} local {}:{} msg:{}\n", mRemoteIp, mRemotePort, mLocalIp, mLocalPort, ec.message());
         mCb(shared_from_this(), WS_CLIENT_CLOSE, nullptr, 0);
         return;
     }
     if (ec) {
-        ERR("error ws read, remote %s:%d local %s:%d msg:%s\n", mRemoteIp.c_str(), mRemotePort, mLocalIp.c_str(), mLocalPort, ec.message().c_str());
+        ERR("error ws read, remote {}:{} local {}:{} msg:{}\n", mRemoteIp, mRemotePort, mLocalIp, mLocalPort, ec.message());
         mCb(shared_from_this(), WS_CLIENT_ERROR, nullptr, 0);
         return;
     }
@@ -141,9 +141,9 @@ void WsClientSession::on_read(beast::error_code ec, std::size_t bytes_transferre
     bool isBinary = mStream.got_binary();
     if (isBinary) {
         type = WS_CLIENT_BINARY;
-        DEBUG("ws receive message, remote %s:%d\n", mRemoteIp.c_str(), mRemotePort);
+        DEBUG("ws receive message, remote {}:{}\n", mRemoteIp, mRemotePort);
     } else {
-        INFO("ws receive message, remote %s:%d message:%.*s\n", mRemoteIp.c_str(), mRemotePort, data.size(), (char*)data.data());
+        INFO("ws receive message, remote {}:{} message:{:.{}}\n", mRemoteIp, mRemotePort, (char*)data.data(), data.size());
     }
     mCb(shared_from_this(), type, (char*)data.data(), data.size());
     do_read();
@@ -158,7 +158,7 @@ void WsClientSession::do_close()
 void WsClientSession::on_close(beast::error_code ec)
 {
     if (ec) {
-        ERR("error ws close, remote %s:%d local %s:%d msg:%s\n", mRemoteIp.c_str(), mRemotePort, mLocalIp.c_str(), mLocalPort, ec.message().c_str());
+        ERR("error ws close, remote {}:{} local {}:{} msg:{}\n", mRemoteIp, mRemotePort, mLocalIp, mLocalPort, ec.message());
         return;
     }
 }

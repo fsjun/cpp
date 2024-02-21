@@ -223,7 +223,7 @@ vector<string> NetworkInfo::GetAllInterfaceIp()
             addr = &((struct sockaddr_in*)ifAddrStruct->ifa_addr)->sin_addr;
             char addressBuffer[INET6_ADDRSTRLEN];
             inet_ntop(AF_INET, addr, addressBuffer, INET6_ADDRSTRLEN);
-            INFO("%s IPv4 Address %s\n", ifAddrStruct->ifa_name, addressBuffer);
+            INFO("{} IPv4 Address {}\n", ifAddrStruct->ifa_name, addressBuffer);
             long ip = (long)ntohl(addr->s_addr);
             // if (ip != 0x7f000001) {
             char addressBuffer2[INET_ADDRSTRLEN];
@@ -235,7 +235,7 @@ vector<string> NetworkInfo::GetAllInterfaceIp()
             addr = &((struct sockaddr_in*)ifAddrStruct->ifa_addr)->sin_addr;
             char addressBuffer[INET6_ADDRSTRLEN];
             inet_ntop(AF_INET6, addr, addressBuffer, INET6_ADDRSTRLEN);
-            INFO("%s IPv6 Address %s\n", ifAddrStruct->ifa_name, addressBuffer);
+            INFO("{} IPv6 Address {}\n", ifAddrStruct->ifa_name, addressBuffer);
         }
         ifAddrStruct = ifAddrStruct->ifa_next;
     }

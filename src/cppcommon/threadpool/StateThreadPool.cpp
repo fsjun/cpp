@@ -48,13 +48,13 @@ int StateThreadPool::execute(string stateId, function<void()> task)
     if (it == mTaskQueues.end()) {
         if (mMaxThreadSize > 0 && mCurrThreadSize >= mMaxThreadSize) {
             mOwner = 0;
-            ERR("state thread pool exceed max, current:%d max %d\n", mCurrThreadSize, mMaxThreadSize);
+            ERR("state thread pool exceed max, current:{} max {}\n", mCurrThreadSize, mMaxThreadSize);
             return -1;
         }
         auto iter = mThreads.find(stateId);
         if (iter != mThreads.end()) {
             mOwner = 0;
-            ERR("task queue not exist, but thread is exist, stateId:%s\n", stateId.c_str());
+            ERR("task queue not exist, but thread is exist, stateId:{}\n", stateId.c_str());
             return -1;
         }
         ++mCurrThreadSize;
@@ -137,10 +137,10 @@ void StateThreadPool::workerThreadFunc(string stateId) noexcept
             break;
         }
         // } catch (std::exception& e) {
-        //     ERR("state thread pool exception: %s\n", e.what());
+        //     ERR("state thread pool exception: {}\n", e.what());
         //     auto traceInfo = TraceInfo::GetAllTraceInfo();
         //     string traceStr = traceInfo->getBackTraceSymbols();
-        //     ERR("%s\n", traceStr.c_str());
+        //     ERR("{}\n", traceStr);
         // } catch (...) {
         //     ERR("state thread pool exception\n");
         // }

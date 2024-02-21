@@ -7,10 +7,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#ifdef _WIN32
-//#define NO_QFORKIMPL
-//#include <msvs\win32_interop\win32_fixes.h>
-//#endif
+// #ifdef _WIN32
+// #define NO_QFORKIMPL
+// #include <msvs\win32_interop\win32_fixes.h>
+// #endif
 
 Redis::~Redis()
 {
@@ -36,7 +36,7 @@ int Redis::connect()
         return -1;
     }
     if (mContext->err) {
-        ERR("redis Connection error: %s\n", mContext->errstr);
+        ERR("redis Connection error: {}\n", mContext->errstr);
         redisFree(mContext);
         mContext = nullptr;
         return -1;
@@ -44,7 +44,7 @@ int Redis::connect()
     if (!mPassword.empty()) {
         int ret = auth();
         if (ret < 0) {
-            ERR("auth error, password:%s\n", mPassword.c_str());
+            ERR("auth error, password:{}\n", mPassword);
             redisFree(mContext);
             mContext = nullptr;
             return -1;
@@ -59,17 +59,17 @@ int Redis::auth()
     reply = static_cast<redisReply*>(redisCommand(mContext, "AUTH %s", mPassword.c_str()));
     if (!reply) {
         if (mContext->err == REDIS_ERR_EOF || mContext->err == REDIS_ERR_IO) {
-            ERR("auth error:%s\n", mContext->errstr);
+            ERR("auth error:{}\n", mContext->errstr);
             disconnect();
             return -1;
         } else {
-            ERR("auth error:%s\n", mContext->errstr);
+            ERR("auth error:{}\n", mContext->errstr);
             disconnect();
             return -1;
         }
     }
     if (reply->type == REDIS_REPLY_ERROR) {
-        ERR("error:%.*s\n", reply->len, reply->str);
+        ERR("error:{:.{}}\n", reply->str, reply->len);
         freeReplyObject(reply);
         return -1;
     }
@@ -169,7 +169,7 @@ Json::Value Redis::getValue(struct redisReply* reply)
                     root[i * 2] = getValue(elementField);
                     root[i * 2 + 1] = getValue(elementValue);
                 } else {
-                    ERR("execute the value type[%d] is error\n", elementField->type);
+                    ERR("execute the value type[{}] is error\n", elementField->type);
                 }
             }
             return root;
@@ -180,7 +180,7 @@ Json::Value Redis::getValue(struct redisReply* reply)
         }
         return root;
     } else {
-        ERR("execute the value type[%d] is error\n", reply->type);
+        ERR("execute the value type[{}] is error\n", reply->type);
     }
     return root;
 }
@@ -200,18 +200,18 @@ int Redis::execute(const char* format, va_list ap)
     reply = static_cast<redisReply*>(redisvCommand(mContext, format, ap));
     if (!reply) {
         if (mContext->err == REDIS_ERR_EOF || mContext->err == REDIS_ERR_IO) {
-            ERR("execute error:%s\n", mContext->errstr);
+            ERR("execute error:{}\n", mContext->errstr);
             disconnect();
             return -1;
         } else {
-            ERR("del error:%s\n", mContext->errstr);
+            ERR("del error:{}\n", mContext->errstr);
             disconnect();
             return -1;
         }
     }
 
     if (reply->type == REDIS_REPLY_ERROR) {
-        ERR("error:%.*s\n", reply->len, reply->str);
+        ERR("error:{:.{}}\n", reply->str, reply->len);
         freeReplyObject(reply);
         return -1;
     }
@@ -235,18 +235,18 @@ int Redis::execute(string& result, const char* format, va_list ap)
     reply = static_cast<redisReply*>(redisvCommand(mContext, format, ap));
     if (!reply) {
         if (mContext->err == REDIS_ERR_EOF || mContext->err == REDIS_ERR_IO) {
-            ERR("del error:%s\n", mContext->errstr);
+            ERR("del error:{}\n", mContext->errstr);
             disconnect();
             return -1;
         } else {
-            ERR("del error:%s\n", mContext->errstr);
+            ERR("del error:{}\n", mContext->errstr);
             disconnect();
             return -1;
         }
     }
 
     if (reply->type == REDIS_REPLY_ERROR) {
-        ERR("error:%.*s\n", reply->len, reply->str);
+        ERR("error:{:.{}}\n", reply->str, reply->len);
         freeReplyObject(reply);
         return -1;
     }
@@ -274,18 +274,18 @@ int Redis::execute(map<string, string>& result, const char* format, va_list ap)
     reply = static_cast<redisReply*>(redisvCommand(mContext, format, ap));
     if (!reply) {
         if (mContext->err == REDIS_ERR_EOF || mContext->err == REDIS_ERR_IO) {
-            ERR("del error:%s\n", mContext->errstr);
+            ERR("del error:{}\n", mContext->errstr);
             disconnect();
             return -1;
         } else {
-            ERR("del error:%s\n", mContext->errstr);
+            ERR("del error:{}\n", mContext->errstr);
             disconnect();
             return -1;
         }
     }
 
     if (reply->type == REDIS_REPLY_ERROR) {
-        ERR("error:%.*s\n", reply->len, reply->str);
+        ERR("error:{:.{}}\n", reply->str, reply->len);
         freeReplyObject(reply);
         return -1;
     }
@@ -302,7 +302,7 @@ int Redis::execute(map<string, string>& result, const char* format, va_list ap)
             } else if (elementValue->type == REDIS_REPLY_INTEGER) {
                 result[elementField->str] = std::to_string(elementValue->integer);
             } else {
-                ERR("execute the value type[%d] is error\n", elementValue->type);
+                ERR("execute the value type[{}] is error\n", elementValue->type);
             }
             i += 2;
         }
@@ -326,18 +326,18 @@ int Redis::execute(vector<string>& result, const char* format, va_list ap)
     reply = static_cast<redisReply*>(redisvCommand(mContext, format, ap));
     if (!reply) {
         if (mContext->err == REDIS_ERR_EOF || mContext->err == REDIS_ERR_IO) {
-            ERR("del error:%s\n", mContext->errstr);
+            ERR("del error:{}\n", mContext->errstr);
             disconnect();
             return -1;
         } else {
-            ERR("del error:%s\n", mContext->errstr);
+            ERR("del error:{}\n", mContext->errstr);
             disconnect();
             return -1;
         }
     }
 
     if (reply->type == REDIS_REPLY_ERROR) {
-        ERR("error:%.*s\n", reply->len, reply->str);
+        ERR("error:{:.{}}\n", reply->str, reply->len);
         freeReplyObject(reply);
         return -1;
     }
@@ -353,7 +353,7 @@ int Redis::execute(vector<string>& result, const char* format, va_list ap)
             } else if (elementField->type == REDIS_REPLY_INTEGER) {
                 result.emplace_back(std::to_string(elementField->integer));
             } else {
-                ERR("execute the value type[%d] is error\n", elementField->type);
+                ERR("execute the value type[{}] is error\n", elementField->type);
             }
             i++;
         }
@@ -378,18 +378,18 @@ int Redis::execute(Json::Value& result, const char* format, va_list ap)
     va_end(ap);
     if (!reply) {
         if (mContext->err == REDIS_ERR_EOF || mContext->err == REDIS_ERR_IO) {
-            ERR("del error:%s\n", mContext->errstr);
+            ERR("del error:{}\n", mContext->errstr);
             disconnect();
             return -1;
         } else {
-            ERR("del error:%s\n", mContext->errstr);
+            ERR("del error:{}\n", mContext->errstr);
             disconnect();
             return -1;
         }
     }
 
     if (reply->type == REDIS_REPLY_ERROR) {
-        ERR("error:%.*s\n", reply->len, reply->str);
+        ERR("error:{:.{}}\n", reply->str, reply->len);
         freeReplyObject(reply);
         return -1;
     }

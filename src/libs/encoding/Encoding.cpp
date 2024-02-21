@@ -8,13 +8,13 @@ int Encoding::Convert(string from_code, string to_code, string src, string& dst)
 {
     iconv_t h_iconv = iconv_open(to_code.c_str(), from_code.c_str());
     if (nullptr == h_iconv) {
-        ERR("iconv do not support from %s to %s\n", from_code.c_str(), to_code.c_str());
+        ERR("iconv do not support from {} to {}\n", from_code, to_code);
         return -1;
     }
     Defer d([h_iconv]() { iconv_close(h_iconv); });
     int ret = 0;
     vector<char> out_vec;
-    out_vec.resize(src.size()+1);
+    out_vec.resize(src.size() + 1);
     while (true) {
         char* in_buf = (char*)src.c_str();
         size_t in_buf_size = src.size();
@@ -27,7 +27,7 @@ int Encoding::Convert(string from_code, string to_code, string src, string& dst)
                 out_vec.resize(out_vec.size() * 2);
                 continue;
             } else {
-                ERR("%d:%s\n", ret, strerror(ret));
+                ERR("{}:{}\n", ret, strerror(ret));
                 return -1;
             }
         }

@@ -104,7 +104,7 @@ int HttpSyncClient::HttpGet(string url_s, vector<map<string, string>> headers, s
         string path = boost::str(boost::format("%s%s") % url.path % url.query);
         return client.httpGet(url.path, headers, body);
     } else {
-        ERR("invalid http url, url:%s", url_s.c_str());
+        ERR("invalid http url, url:{}", url_s);
         return -1;
     }
     return -1;
@@ -138,7 +138,7 @@ int HttpSyncClient::HttpPost(string url_s, vector<map<string, string>> headers, 
         string path = boost::str(boost::format("%s%s") % url.path % url.query);
         return client.httpPost(url.path, headers, contentType, content, body);
     } else {
-        ERR("invalid http url, url:%s", url_s.c_str());
+        ERR("invalid http url, url:{}", url_s);
         return -1;
     }
     return -1;
@@ -172,7 +172,7 @@ int HttpSyncClient::HttpMethod(string url_s, boost::beast::http::verb method, ve
         string path = boost::str(boost::format("%s%s") % url.path % url.query);
         return client.httpMethod(url.path, method, headers, contentType, content, body);
     } else {
-        ERR("invalid http url, url:%s", url_s.c_str());
+        ERR("invalid http url, url:{}", url_s);
         return -1;
     }
     return -1;

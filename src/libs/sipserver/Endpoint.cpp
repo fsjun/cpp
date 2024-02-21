@@ -459,7 +459,7 @@ void Endpoint::log_writer(int level, const char* buffer, int len)
     if (!running) {
         return;
     }
-    INFO("%.*s\n", len, buffer);
+    INFO("{:.{}}\n", buffer, len);
 }
 
 /*
@@ -591,7 +591,7 @@ pj_bool_t Endpoint::call_on_incoming(pjsip_rx_data* rdata)
         pjsip_endpt_respond_stateless(mEndpt, rdata, PJSIP_SC_TEMPORARILY_UNAVAILABLE, NULL, NULL, NULL);
         return PJ_TRUE;
     }
-    INFO("incoming call: %s\n", rdata->msg_info.info);
+    INFO("incoming call: {}\n", rdata->msg_info.info);
     auto callService = CallService::GetInstance();
     callService->on_incoming_call(rdata, &mAppModule);
     return PJ_TRUE;
