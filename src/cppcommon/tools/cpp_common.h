@@ -2,6 +2,7 @@
 
 #include "log/Log.h"
 #include <algorithm>
+#include <any>
 #include <chrono>
 #include <deque>
 #include <functional>
@@ -13,8 +14,9 @@
 #include <sstream>
 #include <thread>
 #include <vector>
-#include <any>
 
+using std::any;
+using std::any_cast;
 using std::cout;
 using std::deque;
 using std::endl;
@@ -32,5 +34,21 @@ using std::uint8_t;
 using std::unique_ptr;
 using std::vector;
 using std::weak_ptr;
-using std::any;
-using std::any_cast;
+
+#define SAFE_END(ret, format, ...)  \
+    if (ret < 0) {                  \
+        ERR(format, ##__VA_ARGS__); \
+        goto end;                   \
+    }
+
+#define SAFE_RETURN(ret, format, ...) \
+    if (ret < 0) {                    \
+        ERR(format, ##__VA_ARGS__);   \
+        return ret;                   \
+    }
+
+#define SAFE_NO_RETURN(ret, format, ...) \
+    if (ret < 0) {                       \
+        ERR(format, ##__VA_ARGS__);      \
+        return;                          \
+    }
