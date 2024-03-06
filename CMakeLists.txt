@@ -62,11 +62,11 @@ add_definitions(-DWIN32_LEAN_AND_MEAN -D_WIN32_WINNT=0x0601)
 
 elseif(APPLE)
 
-SET(CMAKE_INSTALL_PREFIX "/usr/local/3rd/cpp")
+SET(CMAKE_INSTALL_PREFIX "/opt/app/3rd/cpp")
 
-include_directories(/root/app/vcpkg/installed/x64-linux/include)
-LINK_DIRECTORIES(/root/app/vcpkg/installed/x64-linux/debug/lib)
-LINK_DIRECTORIES(/root/app/vcpkg/installed/x64-linux/debug/lib/manual-link)
+include_directories(/opt/app/vcpkg/installed/x64-linux/include)
+LINK_DIRECTORIES(/opt/app/vcpkg/installed/x64-linux/debug/lib)
+LINK_DIRECTORIES(/opt/app/vcpkg/installed/x64-linux/debug/lib/manual-link)
 include_directories("/usr/local/include")
 LINK_DIRECTORIES(/usr/local/lib)
 
