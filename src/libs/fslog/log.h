@@ -29,4 +29,4 @@ enum LogLevel {
     LOG_LEVEL_ALL = 0x7fffffff,
 };
 
-void init_log(LogLevel level, std::string file, int size, int count);
+void init_log(LogLevel level = LOG_LEVEL_INFO, std::string file = "", int size = 1024 * 1024 * 10, int count = 3);

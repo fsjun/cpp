@@ -8,9 +8,13 @@
 
 void init_log(LogLevel level, std::string file, int size, int count)
 {
+    std::vector<spdlog::sink_ptr> sinks;
     auto stdout_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-    auto rotating_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(file, size, count);
-    std::vector<spdlog::sink_ptr> sinks { stdout_sink, rotating_sink };
+    sinks.emplace_back(stdout_sink);
+    if (!file.empty()) {
+        auto rotating_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(file, size, count);
+        sinks.emplace_back(rotating_sink);
+    }
     auto logger = std::make_shared<spdlog::logger>("log", sinks.begin(), sinks.end());
     spdlog::register_logger(logger);
     spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e %t %s:%#] <%^%L%$> %v");
