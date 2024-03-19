@@ -108,5 +108,6 @@ set(enable_httpserver TRUE)
 set(enable_wsclient TRUE)
 set(enable_wsserver TRUE)
 set(enable_sipserver TRUE)
+set(enable_fslog TRUE)
 
 add_subdirectory(src)

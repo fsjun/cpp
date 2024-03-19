@@ -11,7 +11,7 @@ protected:
     // Code here will be called immediately after the constructor (right before each test)
     void SetUp()
     {
-        Log::Init(LOG_LEVEL_INFO);
+        INITLOG();
         INFO("SetUp\n");
     }
 

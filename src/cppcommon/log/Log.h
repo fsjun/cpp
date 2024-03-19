@@ -2,8 +2,8 @@
 
 #include "tools/Singleton.h"
 #include <condition_variable>
-#include <iostream>
 #include <format>
+#include <iostream>
 #include <map>
 #include <mutex>
 #include <thread>
@@ -20,19 +20,28 @@
 #endif
 
 #if LOGON == 0
-#define PRINT(module, level, format, ...)
+#define PRINT(crlf, level, format, ...)
 #elif LOGC == 0
-#define PRINT(level, format, ...) Log::PrintT(false, level, std::string(__FILE__) + std::string(":") + std::string(CT2STR(__LINE__)), format, ##__VA_ARGS__)
+#define PRINT(crlf, level, format, ...) Log::PrintT(crlf, level, std::string(__FILE__) + std::string(":") + std::string(CT2STR(__LINE__)), format, ##__VA_ARGS__)
 #else
-#define PRINT(level, format, ...) Log::Print(level, __FILE__, __LINE__, format, ##__VA_ARGS__)
+#define PRINT(crlf, level, format, ...) Log::Print(level, __FILE__, __LINE__, format, ##__VA_ARGS__)
 #endif
 
-#define FATAL(format, ...) PRINT(LOG_LEVEL_FATAL, format, ##__VA_ARGS__)
-// #define ERR(format, args...) PRINT(LOG_LEVEL_ERR,format,##args)
-#define ERR(format, ...) PRINT(LOG_LEVEL_ERROR, format, ##__VA_ARGS__)
-#define WARN(format, ...) PRINT(LOG_LEVEL_WARN, format, ##__VA_ARGS__)
-#define INFO(format, ...) PRINT(LOG_LEVEL_INFO, format, ##__VA_ARGS__)
-#define DEBUG(format, ...) PRINT(LOG_LEVEL_DEBUG, format, ##__VA_ARGS__)
+// #define FATAL(format, args...) PRINT(LOG_LEVEL_ERR,format,##args)
+#define FATAL(format, ...) PRINT(false, LOG_LEVEL_FATAL, format, ##__VA_ARGS__)
+#define ERR(format, ...) PRINT(false, LOG_LEVEL_ERROR, format, ##__VA_ARGS__)
+#define WARN(format, ...) PRINT(false, LOG_LEVEL_WARN, format, ##__VA_ARGS__)
+#define INFO(format, ...) PRINT(false, LOG_LEVEL_INFO, format, ##__VA_ARGS__)
+#define DEBUG(format, ...) PRINT(false, LOG_LEVEL_DEBUG, format, ##__VA_ARGS__)
+
+#define FATALLN(format, ...) PRINT(true, LOG_LEVEL_FATAL, format, ##__VA_ARGS__)
+#define ERRLN(format, ...) PRINT(true, LOG_LEVEL_ERROR, format, ##__VA_ARGS__)
+#define WARNLN(format, ...) PRINT(true, LOG_LEVEL_WARN, format, ##__VA_ARGS__)
+#define INFOLN(format, ...) PRINT(true, LOG_LEVEL_INFO, format, ##__VA_ARGS__)
+#define DEBUGLN(format, ...) PRINT(true, LOG_LEVEL_DEBUG, format, ##__VA_ARGS__)
+
+// INITLOG(level, file, size, count)
+#define INITLOG(...) Log::Init(__VA_ARGS__)
 
 enum LogLevel {
     LOG_LEVEL_NONE = 0x00,
@@ -55,14 +64,15 @@ public:
 
 class Log : public Singleton<Log> {
 public:
-    static void Init(LogLevel level, std::string file = "", int size = -1, int count = 1);
+    static void Init(LogLevel level = LOG_LEVEL_INFO, std::string file = "", int size = -1, int count = 1);
     static void AddLogOutput(std::string uuid, std::unique_ptr<ILogOutput>& out);
     static void RemoveLogOutput(std::string uuid);
     static void SetLogLevel(LogLevel level);
     static void Print(LogLevel level, char* file, int line, char* format, ...);
     static void Print(LogLevel level, std::string fileLine, std::string format, ...);
     template <typename... Args>
-    static void PrintT(bool isCrlf, LogLevel level, std::string fileLine, std::string_view format, Args&&... args) {
+    static void PrintT(bool isCrlf, LogLevel level, std::string fileLine, std::string_view format, Args&&... args)
+    {
         Print(isCrlf, level, fileLine, format, std::make_format_args(args...));
     }
     static void Print(bool isCrlf, LogLevel level, std::string fileLine, std::string_view format, std::format_args args);
