@@ -6,15 +6,17 @@
 #include "spdlog/sinks/rotating_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 
-void init_log(LogLevel level, std::string file, int size, int count)
+void init_log(LogLevel level, std::string file, int size, int count, bool console)
 {
     auto logger = spdlog::get("log");
     if (!logger) {
-        std::vector<spdlog::sink_ptr> sinks;
-        auto stdout_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-        sinks.emplace_back(stdout_sink);
-        logger = std::make_shared<spdlog::logger>("log", sinks.begin(), sinks.end());
+        logger = std::make_shared<spdlog::logger>("log");
         spdlog::register_logger(logger);
+        if (console) {
+            auto& sinks = logger->sinks();
+            auto stdout_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+            sinks.emplace_back(stdout_sink);
+        }
     }
     if (!file.empty()) {
         auto& sinks = logger->sinks();

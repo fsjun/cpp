@@ -24,7 +24,7 @@
 #define INFOLN(format, ...) SPDLOG_LOGGER_INFO(spdlog::get("log"), format, ##__VA_ARGS__)
 #define DEBUGLN(format, ...) SPDLOG_LOGGER_DEBUG(spdlog::get("log"), format, ##__VA_ARGS__)
 
-// INITLOG(level, file, size, count)
+// INITLOG(level, file, size, count, console)
 #define INITLOG(...) init_log(__VA_ARGS__)
 
 enum LogLevel {
@@ -37,4 +37,4 @@ enum LogLevel {
     LOG_LEVEL_ALL = 0x7fffffff,
 };
 
-void init_log(LogLevel level = LOG_LEVEL_INFO, std::string file = "", int size = 1024 * 1024 * 10, int count = 3);
+void init_log(LogLevel level = LOG_LEVEL_INFO, std::string file = "", int size = 1024 * 1024 * 10, int count = 3, bool console = true);
