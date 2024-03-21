@@ -13,7 +13,7 @@ void init_log(LogLevel level, std::string file, int size, int count)
         std::vector<spdlog::sink_ptr> sinks;
         auto stdout_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
         sinks.emplace_back(stdout_sink);
-        auto logger = std::make_shared<spdlog::logger>("log", sinks.begin(), sinks.end());
+        logger = std::make_shared<spdlog::logger>("log", sinks.begin(), sinks.end());
         spdlog::register_logger(logger);
     }
     if (!file.empty()) {

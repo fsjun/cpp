@@ -4,8 +4,16 @@
 #include "spdlog/common.h"
 #include "spdlog/spdlog.h"
 
+#define FSFATAL(format, ...) printf(format, ##__VA_ARGS__)
+#define FSERR(format, ...) printf(format, ##__VA_ARGS__)
+#define FSWARN(format, ...) printf(format, ##__VA_ARGS__)
+#define FSINFO(format, ...) printf(format, ##__VA_ARGS__)
+#define FSDEBUG(format, ...) printf(format, ##__VA_ARGS__)
+
 #define FATAL(format, ...) printf(format, ##__VA_ARGS__)
+#ifndef ERR
 #define ERR(format, ...) printf(format, ##__VA_ARGS__)
+#endif
 #define WARN(format, ...) printf(format, ##__VA_ARGS__)
 #define INFO(format, ...) printf(format, ##__VA_ARGS__)
 #define DEBUG(format, ...) printf(format, ##__VA_ARGS__)
