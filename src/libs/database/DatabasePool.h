@@ -4,6 +4,7 @@
 #include "tools/ConnectionPool.h"
 #include "tools/Singleton.h"
 #include "tools/cpp_common.h"
+#include "json/json.h"
 #include <memory>
 
 class DatabasePool : public ConnectionPool<Database>, public std::enable_shared_from_this<DatabasePool>, public Singleton<DatabasePool> {
@@ -15,11 +16,14 @@ public:
     void setPassword(string val);
 
     int insert(std::string sql);
-    int insert(std::string sql, std::vector<std::string> params);
+    int insert(std::string sql, std::vector<std::any> params);
+
     int execSql(std::string sql);
-    int execSql(std::string sql, std::vector<std::string> params);
+    int execSql(std::string sql, std::vector<std::any> params);
+
     int execSql(std::string sql, std::vector<std::map<std::string, any>>& result);
-    int execSql(std::string sql, std::vector<std::string> params, std::vector<std::map<std::string, any>>& result);
+    int execSql(std::string sql, std::vector<std::any> params, std::vector<std::map<std::string, any>>& result);
+    int execSql(std::string sql, std::vector<std::any> params, Json::Value& result);
 
 private:
     string mHost;

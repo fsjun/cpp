@@ -39,7 +39,7 @@ int DatabasePool::insert(std::string sql)
     return ret;
 }
 
-int DatabasePool::insert(std::string sql, std::vector<std::string> params)
+int DatabasePool::insert(std::string sql, std::vector<std::any> params)
 {
     int ret = 0;
     auto conn = getConnection([this](shared_ptr<Database> db) {
@@ -67,7 +67,7 @@ int DatabasePool::execSql(std::string sql)
     return ret;
 }
 
-int DatabasePool::execSql(std::string sql, std::vector<std::string> params)
+int DatabasePool::execSql(std::string sql, std::vector<std::any> params)
 {
     int ret = 0;
     auto conn = getConnection([this](shared_ptr<Database> db) {
@@ -95,7 +95,21 @@ int DatabasePool::execSql(std::string sql, std::vector<std::map<std::string, any
     return ret;
 }
 
-int DatabasePool::execSql(std::string sql, std::vector<std::string> params, std::vector<std::map<std::string, any>>& result)
+int DatabasePool::execSql(std::string sql, std::vector<std::any> params, std::vector<std::map<std::string, any>>& result)
+{
+    int ret = 0;
+    auto conn = getConnection([this](shared_ptr<Database> db) {
+        db->connect(mHost, mPort, mDbname, mUser, mPassword);
+    });
+    if (!conn) {
+        return -1;
+    }
+    ret = conn->execSql(sql, params, result);
+    revokeConnection(conn);
+    return ret;
+}
+
+int DatabasePool::execSql(std::string sql, std::vector<std::any> params, Json::Value& result)
 {
     int ret = 0;
     auto conn = getConnection([this](shared_ptr<Database> db) {
