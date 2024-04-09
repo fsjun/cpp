@@ -1,8 +1,21 @@
 #include "encoding/Encoding.h"
+#include "boost/exception/exception.hpp"
 #include "iconv.h"
 #include "tools/Defer.h"
-#include <memory>
+#include <boost/exception/all.hpp>
+#include <boost/locale.hpp>
+#include <exception>
 #include <string.h>
+
+int Encoding::Utf8ToGb18030(string src, string& dst)
+{
+    return Convert("UTF-8", "GB18030", src, dst);
+}
+
+int Encoding::Gb18030ToUtf8(string src, string& dst)
+{
+    return Convert("GB18030", "UTF-8", src, dst);
+}
 
 int Encoding::Convert(string from_code, string to_code, string src, string& dst)
 {
@@ -37,12 +50,26 @@ int Encoding::Convert(string from_code, string to_code, string src, string& dst)
     return 0;
 }
 
-int Encoding::Utf8ToGb18030(string src, string& dst)
+string Encoding::GetSystemEncoding()
 {
-    return Convert("UTF-8", "GB18030", src, dst);
+    string strCodePage = boost::locale::util::get_system_locale();
+    std::locale loc = boost::locale::generator().generate(strCodePage);
+    return std::use_facet<boost::locale::info>(loc).encoding();
 }
 
-int Encoding::Gb18030ToUtf8(string src, string& dst)
+int Encoding::Utf8ToSystemEncoding(string src, string& dst)
 {
-    return Convert("GB18030", "UTF-8", src, dst);
+    int ret = -1;
+    string system_encoding = GetSystemEncoding();
+    try {
+        dst = boost::locale::conv::between(src, system_encoding, "UTF8");
+        ret = 0;
+    } catch (boost::exception& e) {
+        ERR("utf8 to system encoding error, exception: {}\n", boost::diagnostic_information(e));
+    } catch (const std::exception& e) {
+        ERR("utf8 to system encoding error, exception: {}\n", e.what());
+    } catch (...) {
+        ERR("utf8 to system encoding error\n");
+    }
+    return ret;
 }
