@@ -42,6 +42,7 @@
 
 // INITLOG(level, file, size, count)
 #define INITLOG(...) Log::Init(__VA_ARGS__)
+// void init_log(LogLevel level = LOG_LEVEL_INFO, std::string file = "", int size = 1024 * 1024 * 10, int count = 3, bool console = true);
 
 enum LogLevel {
     LOG_LEVEL_NONE = 0x00,
@@ -64,7 +65,7 @@ public:
 
 class Log : public Singleton<Log> {
 public:
-    static void Init(LogLevel level = LOG_LEVEL_INFO, std::string file = "", int size = -1, int count = 1);
+    static void Init(LogLevel level = LOG_LEVEL_INFO, std::string file = "", int size = 1024*1024*10, int count = 3, bool console = true);
     static void AddLogOutput(std::string uuid, std::unique_ptr<ILogOutput>& out);
     static void RemoveLogOutput(std::string uuid);
     static void SetLogLevel(LogLevel level);

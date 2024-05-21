@@ -37,11 +37,13 @@ std::map<LogLevel, std::string> Log::sLevelStringMap = {
     { LOG_LEVEL_ALL, "all" }
 };
 
-void Log::Init(LogLevel level, std::string file, int size, int count)
+void Log::Init(LogLevel level, std::string file, int size, int count, bool console)
 {
     std::lock_guard<std::mutex> l(sMtx);
     auto log = GetInstance();
-    log->mStdOut.reset(new LogStdOutput("stdout", level));
+    if (console) {
+        log->mStdOut.reset(new LogStdOutput("stdout", level));
+    }
     if (!file.empty()) {
         std::unique_ptr<ILogOutput> fileLog(new LogSizeFile("file", level, std::move(file), size, count));
         log->mOut.emplace("file", std::move(fileLog));
@@ -112,9 +114,11 @@ void Log::Print(LogLevel level, char* file, int line, char* format, ...)
     }
     std::string currentTime = Tools::LocalTimeMs();
     oss << "[" << currentTime << " " << GetTid() << " " << fileLine << "] <" << LevelToString(level) << "> ";
-    va_start(ap, format);
-    sInstance->mStdOut->logFunc(level, oss.str(), fmt, ap);
-    va_end(ap);
+    if (sInstance->mStdOut) {
+        va_start(ap, format);
+        sInstance->mStdOut->logFunc(level, oss.str(), fmt, ap);
+        va_end(ap);
+    }
     for (auto& it : sInstance->mOut) {
         auto& out = it.second;
         va_start(ap, format);
@@ -144,9 +148,11 @@ void Log::Print(LogLevel level, std::string fileLine, std::string fmt, ...)
     }
     std::string currentTime = Tools::LocalTimeMs();
     oss << "[" << currentTime << " " << GetTid() << " " << fileLine << "] <" << LevelToString(level) << "> ";
-    va_start(ap, fmt);
-    sInstance->mStdOut->logFunc(level, oss.str(), fmt, ap);
-    va_end(ap);
+    if (sInstance->mStdOut) {
+        va_start(ap, fmt);
+        sInstance->mStdOut->logFunc(level, oss.str(), fmt, ap);
+        va_end(ap);
+    }
     for (auto& it : sInstance->mOut) {
         auto& out = it.second;
         va_start(ap, fmt);
@@ -176,7 +182,9 @@ void Log::Print(bool isCrlf, LogLevel level, std::string fileLine, std::string_v
     }
     std::string currentTime = Tools::LocalTimeMs();
     oss << "[" << currentTime << " " << GetTid() << " " << fileLine << "] <" << LevelToString(level) << "> ";
-    sInstance->mStdOut->logFunc(isCrlf, level, oss.str(), format, args);
+    if (sInstance->mStdOut) {
+        sInstance->mStdOut->logFunc(isCrlf, level, oss.str(), format, args);
+    }
     for (auto& it : sInstance->mOut) {
         auto& out = it.second;
         out->logFunc(isCrlf, level, oss.str(), format, args);
