@@ -37,6 +37,9 @@ int TcpTransport::init(TransportTcpType type, string local_host, int local_port,
                 ERR("bind {}:{} error: {}\n", local_host, local_port, err_msg);
                 return -1;
             }
+            auto le = mSock->local_endpoint();
+            mLocalPort = le.port();
+            INFOLN("local_ep is {}:{}", le.address().to_string(), le.port());
         }
         do_connect(remote_host, remote_port);
     } else if (TRANSPORT_TCP_TYPE_SERVER == type) {
@@ -61,6 +64,9 @@ int TcpTransport::init(TransportTcpType type, string local_host, int local_port,
             ERR("bind {}:{} error: {}\n", local_host, local_port, err_msg);
             return -1;
         }
+        auto le = mAcceptor->local_endpoint();
+        mLocalPort = le.port();
+        INFOLN("local_ep is {}:{}", le.address().to_string(), le.port());
         mAcceptor->listen(boost::asio::socket_base::max_listen_connections, ec);
         if (ec) {
             string err_msg = ec.message();
@@ -71,6 +77,11 @@ int TcpTransport::init(TransportTcpType type, string local_host, int local_port,
     }
     mTransportTcpType = type;
     return 0;
+}
+
+int TcpTransport::getLocalPort()
+{
+    return mLocalPort;
 }
 
 void TcpTransport::setCb(std::function<void(TransportTcpEventType type, shared_ptr<TcpTransport> transport)> cb)
@@ -150,7 +161,7 @@ void TcpTransport::do_write_some(char* data, int size, std::function<void(const 
     mSock->async_send(boost::asio::buffer(data, size), 0, cb);
 }
 
-void TcpTransport::on_write(char* data, int size, std::function<void(const boost::system::error_code& err, const size_t& bytes)> cb)
+void TcpTransport::do_write(char* data, int size, std::function<void(const boost::system::error_code& err, const size_t& bytes)> cb)
 {
     std::lock_guard<mutex> l(mMutex);
     boost::asio::async_write(*mSock, boost::asio::buffer(data, size), cb);

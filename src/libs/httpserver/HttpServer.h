@@ -1,4 +1,5 @@
 #pragma once
+#include "boost/beast/http/status.hpp"
 #include "log/Log.h"
 #include "threadpool/ThreadPool.h"
 #include "tools/boost_common.h"
@@ -32,6 +33,7 @@ public:
     int handleRequest(http::request<http::string_body>& req, any& resp);
 
     static void GenJsonResp(http::request<http::string_body>& req, Json::Value& root, any& resp);
+    static void GenResp(http::request<http::string_body>& req, http::status status, any& resp);
 
 private:
     string mHost;
@@ -76,7 +78,7 @@ void handle_request(http::request<http::string_body>&& req, Send&& send, string 
         send(std::move(*res));
         delete res;
     } else {
-        http::response<http::empty_body> res { http::status::ok, req.version() };
+        http::response<http::empty_body> res { http::status::not_acceptable, req.version() };
         res.keep_alive(req.keep_alive());
         int code = res.result_int();
         string reason = res.reason();

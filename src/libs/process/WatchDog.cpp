@@ -11,8 +11,8 @@ void WatchDog::addProgram(string path)
         path,
         *mIoContext,
         ec,
-        bp::std_out.close(),
-        bp::std_err.close(),
+        bp::std_out > bp::null,
+        bp::std_err > bp::null,
         bp::std_in < bp::null,
         bp::on_exit([path, this](int exit, const std::error_code& ec_in) {
             ERR("{} exit, exit:{} ec:{}\n", path, exit, ec_in.value());

@@ -76,6 +76,7 @@ int HttpServer::handleRequest(http::request<http::string_body>& req, any& resp)
             return cb(req, resp);
         }
     }
+    GenResp(req, http::status::not_found, resp);
     return 0;
 }
 
@@ -88,5 +89,14 @@ void HttpServer::GenJsonResp(http::request<http::string_body>& req, Json::Value&
     res.keep_alive(req.keep_alive());
     res.body() = result;
     res.prepare_payload();
+    resp = res;
+}
+
+void HttpServer::GenResp(http::request<http::string_body>& req, http::status status, any& resp)
+{
+    http::response<http::empty_body> res { status, req.version() };
+    res.set(http::field::server, "http");
+    res.set(http::field::content_type, "application/json");
+    res.keep_alive(req.keep_alive());
     resp = res;
 }
