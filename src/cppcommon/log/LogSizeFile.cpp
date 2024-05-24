@@ -1,9 +1,11 @@
 #include "log/LogSizeFile.h"
 #include "tools/Tools.h"
+#include <filesystem>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
+#include <system_error>
 using namespace std;
 
 LogSizeFile::LogSizeFile(std::string uuid, LogLevel level, std::string file, int size, int count)
@@ -13,6 +15,9 @@ LogSizeFile::LogSizeFile(std::string uuid, LogLevel level, std::string file, int
     this->mFile = file;
     this->mSize = size;
     this->mCount = count;
+    std::filesystem::path p(file);
+    std::error_code ec;
+    std::filesystem::create_directories(p.parent_path(), ec);
     mFp = fopen(file.c_str(), "a");
 }
 
