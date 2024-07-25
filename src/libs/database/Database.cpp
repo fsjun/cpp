@@ -1,5 +1,7 @@
 #include "Database.h"
+#include <chrono>
 #include <exception>
+#include <thread>
 
 using namespace std;
 
@@ -45,26 +47,37 @@ int Database::insert(std::string sql)
 int Database::insert(string sql, std::vector<std::any> params)
 {
     int id = -1;
+    int retry = 0;
+    int ret = -1;
     lock_guard<mutex> l(mMtx);
-    int ret = connect();
-    if (ret < 0) {
-        return -1;
-    }
-    try {
-        mysqlx::SqlStatement sqlStatement = mSession->sql(sql);
-        ret = bindParams(sqlStatement, params);
+    while (retry++ < mRetryCount) {
+        ret = connect();
         if (ret < 0) {
-            ERR("bindParams error\n");
-            return -1;
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            continue;
         }
-        mysqlx::SqlResult res = sqlStatement.execute();
-        id = res.getAutoIncrementValue();
-    } catch (std::exception& e) {
-        ERR("sql exception: {}\n", e.what());
-        mSession.reset();
-    } catch (...) {
-        ERR("sql exception\n");
-        mSession.reset();
+        try {
+            mysqlx::SqlStatement sqlStatement = mSession->sql(sql);
+            ret = bindParams(sqlStatement, params);
+            if (ret < 0) {
+                ERR("bindParams error\n");
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                continue;
+            }
+            mysqlx::SqlResult res = sqlStatement.execute();
+            id = res.getAutoIncrementValue();
+            ret = 0;
+            break;
+        } catch (std::exception& e) {
+            ERR("sql exception: {}\n", e.what());
+            mSession.reset();
+            ret = -1;
+        } catch (...) {
+            ERR("sql exception\n");
+            mSession.reset();
+            ret = -1;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
     return id;
 }
@@ -78,26 +91,37 @@ int Database::execSql(std::string sql)
 int Database::execSql(string sql, std::vector<std::any> params)
 {
     int count = -1;
+    int retry = 0;
+    int ret = -1;
     lock_guard<mutex> l(mMtx);
-    int ret = connect();
-    if (ret < 0) {
-        return -1;
-    }
-    try {
-        mysqlx::SqlStatement sqlStatement = mSession->sql(sql);
-        ret = bindParams(sqlStatement, params);
+    while (retry++ < mRetryCount) {
+        ret = connect();
         if (ret < 0) {
-            ERR("bindParams error\n");
-            return -1;
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            continue;
         }
-        mysqlx::SqlResult res = sqlStatement.execute();
-        count = res.getAffectedItemsCount();
-    } catch (std::exception& e) {
-        ERR("sql exception: {}\n", e.what());
-        mSession.reset();
-    } catch (...) {
-        ERR("sql exception\n");
-        mSession.reset();
+        try {
+            mysqlx::SqlStatement sqlStatement = mSession->sql(sql);
+            ret = bindParams(sqlStatement, params);
+            if (ret < 0) {
+                ERR("bindParams error\n");
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                continue;
+            }
+            mysqlx::SqlResult res = sqlStatement.execute();
+            count = res.getAffectedItemsCount();
+            ret = 0;
+            break;
+        } catch (std::exception& e) {
+            ERR("sql exception: {}\n", e.what());
+            mSession.reset();
+            ret = -1;
+        } catch (...) {
+            ERR("sql exception\n");
+            mSession.reset();
+            ret = -1;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
     return count;
 }
@@ -110,152 +134,168 @@ int Database::execSql(std::string sql, std::vector<std::map<std::string, any>>& 
 
 int Database::execSql(std::string sql, std::vector<std::any> params, std::vector<std::map<std::string, any>>& result)
 {
+    int retry = 0;
+    int ret = -1;
     lock_guard<mutex> l(mMtx);
-    int ret = connect();
-    if (ret < 0) {
-        return -1;
-    }
-    ret = 0;
-    try {
-        mysqlx::SqlStatement sqlStatement = mSession->sql(sql);
-        ret = bindParams(sqlStatement, params);
+    while (retry++ < mRetryCount) {
+        ret = connect();
         if (ret < 0) {
-            ERR("bindParams error\n");
-            return -1;
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            continue;
         }
-        mysqlx::SqlResult res = sqlStatement.execute();
-        int rowCount = res.count();
-        int colCount = res.getColumnCount();
-        auto& columns = res.getColumns();
-        for (int i = 0; i < rowCount; ++i) {
-            auto row = res.fetchOne();
-            std::map<std::string, any> po;
-            for (int j = 0; j < colCount; ++j) {
-                auto column = columns[j];
-                string columnLabel = column.getColumnLabel();
-                auto col = row.get(j);
-                auto type = col.getType();
-                switch (type) {
-                case mysqlx::Value::VNULL:
-                    break;
-                case mysqlx::Value::UINT64:
-                    po.emplace(columnLabel, col.get<uint64_t>());
-                    break;
-                case mysqlx::Value::INT64:
-                    po.emplace(columnLabel, col.get<int64_t>());
-                    break;
-                case mysqlx::Value::FLOAT:
-                    po.emplace(columnLabel, col.get<float>());
-                    break;
-                case mysqlx::Value::DOUBLE:
-                    po.emplace(columnLabel, col.get<double>());
-                    break;
-                case mysqlx::Value::BOOL:
-                    po.emplace(columnLabel, col.get<bool>());
-                    break;
-                case mysqlx::Value::STRING:
-                    po.emplace(columnLabel, col.get<string>());
-                    break;
-                case mysqlx::Value::DOCUMENT:
-                    break;
-                case mysqlx::Value::RAW: {
-                    auto byte = col.getRawBytes();
-                    uint8_t* data = (uint8_t*)byte.first;
-                    int len = byte.second;
-                    string str = decodeDateTime(data, len);
-                    po.emplace(columnLabel, str);
-                    break;
-                }
-                case mysqlx::Value::ARRAY:
-                    break;
-                }
+        try {
+            mysqlx::SqlStatement sqlStatement = mSession->sql(sql);
+            ret = bindParams(sqlStatement, params);
+            if (ret < 0) {
+                ERR("bindParams error\n");
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                continue;
             }
-            result.emplace_back(po);
+            mysqlx::SqlResult res = sqlStatement.execute();
+            int rowCount = res.count();
+            int colCount = res.getColumnCount();
+            auto& columns = res.getColumns();
+            for (int i = 0; i < rowCount; ++i) {
+                auto row = res.fetchOne();
+                std::map<std::string, any> po;
+                for (int j = 0; j < colCount; ++j) {
+                    auto column = columns[j];
+                    string columnLabel = column.getColumnLabel();
+                    auto col = row.get(j);
+                    auto type = col.getType();
+                    switch (type) {
+                    case mysqlx::Value::VNULL:
+                        break;
+                    case mysqlx::Value::UINT64:
+                        po.emplace(columnLabel, col.get<uint64_t>());
+                        break;
+                    case mysqlx::Value::INT64:
+                        po.emplace(columnLabel, col.get<int64_t>());
+                        break;
+                    case mysqlx::Value::FLOAT:
+                        po.emplace(columnLabel, col.get<float>());
+                        break;
+                    case mysqlx::Value::DOUBLE:
+                        po.emplace(columnLabel, col.get<double>());
+                        break;
+                    case mysqlx::Value::BOOL:
+                        po.emplace(columnLabel, col.get<bool>());
+                        break;
+                    case mysqlx::Value::STRING:
+                        po.emplace(columnLabel, col.get<string>());
+                        break;
+                    case mysqlx::Value::DOCUMENT:
+                        break;
+                    case mysqlx::Value::RAW: {
+                        auto byte = col.getRawBytes();
+                        uint8_t* data = (uint8_t*)byte.first;
+                        int len = byte.second;
+                        string str = decodeDateTime(data, len);
+                        po.emplace(columnLabel, str);
+                        break;
+                    }
+                    case mysqlx::Value::ARRAY:
+                        break;
+                    }
+                }
+                result.emplace_back(po);
+            }
+            ret = 0;
+            break;
+        } catch (std::exception& e) {
+            ERR("exception on query mysql: {}\n", e.what());
+            mSession.reset();
+            ret = -1;
+        } catch (...) {
+            ERR("exception on query mysql\n");
+            mSession.reset();
+            ret = -1;
         }
-    } catch (std::exception& e) {
-        ERR("exception on query mysql: {}\n", e.what());
-        mSession.reset();
-        ret = -1;
-    } catch (...) {
-        ERR("exception on query mysql\n");
-        mSession.reset();
-        ret = -1;
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
     return ret;
 }
 
 int Database::execSql(std::string sql, std::vector<std::any> params, Json::Value& result)
 {
+    int retry = 0;
+    int ret = -1;
     lock_guard<mutex> l(mMtx);
-    int ret = connect();
-    if (ret < 0) {
-        return -1;
-    }
-    ret = 0;
-    try {
-        mysqlx::SqlStatement sqlStatement = mSession->sql(sql);
-        ret = bindParams(sqlStatement, params);
+    while (retry++ < mRetryCount) {
+        ret = connect();
         if (ret < 0) {
-            ERR("bindParams error\n");
-            return -1;
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            continue;
         }
-        mysqlx::SqlResult res = sqlStatement.execute();
-        int rowCount = res.count();
-        int colCount = res.getColumnCount();
-        auto& columns = res.getColumns();
-        for (int i = 0; i < rowCount; ++i) {
-            auto row = res.fetchOne();
-            Json::Value po;
-            for (int j = 0; j < colCount; ++j) {
-                auto column = columns[j];
-                string columnLabel = column.getColumnLabel();
-                auto col = row.get(j);
-                auto type = col.getType();
-                switch (type) {
-                case mysqlx::Value::VNULL:
-                    break;
-                case mysqlx::Value::UINT64:
-                    po[columnLabel] = col.get<uint64_t>();
-                    break;
-                case mysqlx::Value::INT64:
-                    po[columnLabel] = col.get<int64_t>();
-                    break;
-                case mysqlx::Value::FLOAT:
-                    po[columnLabel] = col.get<float>();
-                    break;
-                case mysqlx::Value::DOUBLE:
-                    po[columnLabel] = col.get<double>();
-                    break;
-                case mysqlx::Value::BOOL:
-                    po[columnLabel] = col.get<bool>();
-                    break;
-                case mysqlx::Value::STRING:
-                    po[columnLabel] = col.get<string>();
-                    break;
-                case mysqlx::Value::DOCUMENT:
-                    break;
-                case mysqlx::Value::RAW: {
-                    auto byte = col.getRawBytes();
-                    uint8_t* data = (uint8_t*)byte.first;
-                    int len = byte.second;
-                    string str = decodeDateTime(data, len);
-                    po[columnLabel] = str;
-                    break;
-                }
-                case mysqlx::Value::ARRAY:
-                    break;
-                }
+        try {
+            mysqlx::SqlStatement sqlStatement = mSession->sql(sql);
+            ret = bindParams(sqlStatement, params);
+            if (ret < 0) {
+                ERR("bindParams error\n");
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                continue;
             }
-            result.append(po);
+            mysqlx::SqlResult res = sqlStatement.execute();
+            int rowCount = res.count();
+            int colCount = res.getColumnCount();
+            auto& columns = res.getColumns();
+            for (int i = 0; i < rowCount; ++i) {
+                auto row = res.fetchOne();
+                Json::Value po;
+                for (int j = 0; j < colCount; ++j) {
+                    auto column = columns[j];
+                    string columnLabel = column.getColumnLabel();
+                    auto col = row.get(j);
+                    auto type = col.getType();
+                    switch (type) {
+                    case mysqlx::Value::VNULL:
+                        break;
+                    case mysqlx::Value::UINT64:
+                        po[columnLabel] = col.get<uint64_t>();
+                        break;
+                    case mysqlx::Value::INT64:
+                        po[columnLabel] = col.get<int64_t>();
+                        break;
+                    case mysqlx::Value::FLOAT:
+                        po[columnLabel] = col.get<float>();
+                        break;
+                    case mysqlx::Value::DOUBLE:
+                        po[columnLabel] = col.get<double>();
+                        break;
+                    case mysqlx::Value::BOOL:
+                        po[columnLabel] = col.get<bool>();
+                        break;
+                    case mysqlx::Value::STRING:
+                        po[columnLabel] = col.get<string>();
+                        break;
+                    case mysqlx::Value::DOCUMENT:
+                        break;
+                    case mysqlx::Value::RAW: {
+                        auto byte = col.getRawBytes();
+                        uint8_t* data = (uint8_t*)byte.first;
+                        int len = byte.second;
+                        string str = decodeDateTime(data, len);
+                        po[columnLabel] = str;
+                        break;
+                    }
+                    case mysqlx::Value::ARRAY:
+                        break;
+                    }
+                }
+                result.append(po);
+            }
+            ret = 0;
+            break;
+        } catch (std::exception& e) {
+            ERR("exception on query mysql: {}\n", e.what());
+            mSession.reset();
+            ret = -1;
+        } catch (...) {
+            ERR("exception on query mysql\n");
+            mSession.reset();
+            ret = -1;
         }
-    } catch (std::exception& e) {
-        ERR("exception on query mysql: {}\n", e.what());
-        mSession.reset();
-        ret = -1;
-    } catch (...) {
-        ERR("exception on query mysql\n");
-        mSession.reset();
-        ret = -1;
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
     return ret;
 }
