@@ -26,6 +26,7 @@ private:
     std::mutex mMutex;
     std::condition_variable mCv;
     bool isSend = false;
+    bool mIsSendError = false;
     int mQueueSize = 5;
     std::deque<std::pair<bool, shared_ptr<std::vector<char>>>> mQueue;
     string mRemoteIp;

@@ -52,4 +52,5 @@ private:
     std::string mUrl;
 
     std::mutex mMtx;
+    int mRetryCount = 3;
 };
