@@ -91,6 +91,9 @@ int WsServerSession::do_write(string message, bool async)
             if (mQueue.size() >= mQueueSize) {
                 mCv.wait(l, [this]() { return mQueue.size() < mQueueSize; });
             }
+            if (mIsSendError) {
+                return -1;
+            }
             if (isSend) {
                 mQueue.emplace_back(std::make_pair(false, vec));
             } else {
@@ -162,6 +165,7 @@ void WsServerSession::on_write(shared_ptr<std::vector<char>> vec, beast::error_c
     if (ec) {
         ERR("ws write error, remote {}:{} msg:{}\n", mRemoteIp, mRemotePort, ec.message());
         mIsSendError = true;
+        mQueue.clear();
         return;
     }
     if (mQueue.empty()) {
