@@ -86,6 +86,7 @@ int HttpClient::request(string url, int post, long timeout, map<string, string>*
     ostringstream oss;
     string p;
     struct curl_slist* headerlist = nullptr;
+    long resp_code = 0;
     char* ct = nullptr;
     curl_easy_setopt(mCurl, CURLOPT_TIMEOUT, timeout);
     curl_easy_setopt(mCurl, CURLOPT_CONNECTTIMEOUT, 10L);
@@ -113,13 +114,16 @@ int HttpClient::request(string url, int post, long timeout, map<string, string>*
         }
     }
     curl_easy_setopt(mCurl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, 0L);
+    curl_easy_setopt(handle, CURLOPT_SSL_VERIFYHOST, 0L);
     res = curl_easy_perform(mCurl);
     if (res != CURLE_OK) {
         ERR("curl_easy_perform() failed[{}]: {}\n", ret, curl_easy_strerror(res));
         ret = -1;
         goto end;
     }
-    curl_easy_getinfo(mCurl, CURLINFO_RESPONSE_CODE, &code);
+    curl_easy_getinfo(mCurl, CURLINFO_RESPONSE_CODE, &resp_code);
+    code = resp_code;
     curl_easy_getinfo(mCurl, CURLINFO_CONTENT_TYPE, &ct);
     if (ct) {
         contentType = ct;
