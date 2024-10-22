@@ -1,28 +1,23 @@
 #pragma once
 #define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_DEBUG
 
+#include <string>
 #include "spdlog/common.h"
 #include "spdlog/spdlog.h"
 
-#define FSFATAL(format, ...) printf(format, ##__VA_ARGS__)
-#define FSERR(format, ...) printf(format, ##__VA_ARGS__)
-#define FSWARN(format, ...) printf(format, ##__VA_ARGS__)
-#define FSINFO(format, ...) printf(format, ##__VA_ARGS__)
-#define FSDEBUG(format, ...) printf(format, ##__VA_ARGS__)
+#define EOL "\n"
 
-#define FATAL(format, ...) printf(format, ##__VA_ARGS__)
-#ifndef ERR
-#define ERR(format, ...) printf(format, ##__VA_ARGS__)
-#endif
-#define WARN(format, ...) printf(format, ##__VA_ARGS__)
-#define INFO(format, ...) printf(format, ##__VA_ARGS__)
-#define DEBUG(format, ...) printf(format, ##__VA_ARGS__)
+#define FATAL(format, ...) SPDLOG_LOGGER_CRITICAL(spdlog::get("log"), format, ##__VA_ARGS__)
+#define ERR(format, ...) SPDLOG_LOGGER_ERROR(spdlog::get("log"), format, ##__VA_ARGS__)
+#define WARN(format, ...) SPDLOG_LOGGER_WARN(spdlog::get("log"), format, ##__VA_ARGS__)
+#define INFO(format, ...) SPDLOG_LOGGER_INFO(spdlog::get("log"), format, ##__VA_ARGS__)
+#define DEBUG(format, ...) SPDLOG_LOGGER_DEBUG(spdlog::get("log"), format, ##__VA_ARGS__)
 
-#define FATALLN(format, ...) SPDLOG_LOGGER_CRITICAL(spdlog::get("log"), format, ##__VA_ARGS__)
-#define ERRLN(format, ...) SPDLOG_LOGGER_ERROR(spdlog::get("log"), format, ##__VA_ARGS__)
-#define WARNLN(format, ...) SPDLOG_LOGGER_WARN(spdlog::get("log"), format, ##__VA_ARGS__)
-#define INFOLN(format, ...) SPDLOG_LOGGER_INFO(spdlog::get("log"), format, ##__VA_ARGS__)
-#define DEBUGLN(format, ...) SPDLOG_LOGGER_DEBUG(spdlog::get("log"), format, ##__VA_ARGS__)
+#define FATALLN(format, ...) SPDLOG_LOGGER_CRITICAL(spdlog::get("log"), format##EOL, ##__VA_ARGS__)
+#define ERRLN(format, ...) SPDLOG_LOGGER_ERROR(spdlog::get("log"), format##EOL, ##__VA_ARGS__)
+#define WARNLN(format, ...) SPDLOG_LOGGER_WARN(spdlog::get("log"), format##EOL, ##__VA_ARGS__)
+#define INFOLN(format, ...) SPDLOG_LOGGER_INFO(spdlog::get("log"), format##EOL, ##__VA_ARGS__)
+#define DEBUGLN(format, ...) SPDLOG_LOGGER_DEBUG(spdlog::get("log"), format##EOL, ##__VA_ARGS__)
 
 // INITLOG(level, file, size, count, console)
 #define INITLOG(...) init_log(__VA_ARGS__)
