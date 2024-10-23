@@ -1,7 +1,7 @@
 #include <memory>
 #include <vector>
 
-#include "fslog/log.h"
+#include "fslog/Log.h"
 
 #include "spdlog/formatter.h"
 #include "spdlog/sinks/rotating_file_sink.h"
