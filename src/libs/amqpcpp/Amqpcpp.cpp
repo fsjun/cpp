@@ -8,7 +8,7 @@ Amqpcpp::~Amqpcpp()
 {
 }
 
-int Amqpcpp::init(struct options opt)
+int Amqpcpp::init(struct options opt, bool sendOnly)
 {
     mHost = opt.host;
     mPort = opt.port;
@@ -20,6 +20,7 @@ int Amqpcpp::init(struct options opt)
     mBindingKey = opt.bindingkey;
     mRoutingKey = opt.routingkey;
     mChannelNumber = 1;
+    mSendOnly = sendOnly;
     return 0;
 }
 
@@ -90,6 +91,9 @@ int Amqpcpp::connect()
 
 void Amqpcpp::onReady()
 {
+    if (mSendOnly) {
+        return;
+    }
     auto weak = weak_from_this();
     mChannel->declareExchange(mExchangeName, AMQP::direct, AMQP::durable);
     mChannel->declareQueue(mQueueName, AMQP::durable + AMQP::autodelete);

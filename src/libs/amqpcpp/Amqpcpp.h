@@ -27,7 +27,7 @@ public:
         string routingkey;
     };
     ~Amqpcpp();
-    int init(struct options opt);
+    int init(struct options opt, bool sendOnly = false);
     int setCallback(function<int(string)> func);
     int start();
     void stop();
@@ -62,6 +62,7 @@ private:
     int mPort;
     string mUser;
     string mUserPwd;
+    bool mSendOnly = false;
 
     function<int(string)> mCallback;
     shared_ptr<Thread> mThread;
