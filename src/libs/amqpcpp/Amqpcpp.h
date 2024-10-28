@@ -42,6 +42,9 @@ private:
     int disconnect();
     void onReady();
     void sendPendingList();
+    static void AsyncCallback(EV_P_ ev_async*, int);
+    int doSend(string routingKey, string msg);
+    void internalBreak();
 
 private:
     bool mIsRun = true;
@@ -51,6 +54,8 @@ private:
     shared_ptr<AMQP::TcpConnection> mConnection;
     shared_ptr<AMQP::TcpChannel> mChannel;
     shared_ptr<AMQP::LibEvHandler> mHandler;
+    shared_ptr<AMQP::Reliable<>> mReliable;
+    int mSendCount = 0;
 
     string mBindingKey;
     string mRoutingKey;
@@ -66,4 +71,5 @@ private:
 
     function<int(string)> mCallback;
     shared_ptr<Thread> mThread;
+    ev_async mAsyncWatcher;
 };
