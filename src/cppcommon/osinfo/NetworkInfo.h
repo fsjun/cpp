@@ -16,6 +16,10 @@
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <sys/types.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <net/if.h>
 #endif
 
 using std::string;
