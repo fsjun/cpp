@@ -83,10 +83,16 @@ int WsServerSession::do_write(string message, bool async)
     INFO("ws send message, remote {}:{} message:{}\n", mRemoteIp, mRemotePort, message);
     std::unique_lock<std::mutex> l(mMutex);
     if (async) {
+        if (mIsSendError) {
+            return -1;
+        }
         shared_ptr<std::vector<char>> vec = make_shared<std::vector<char>>(message.begin(), message.end());
         if (isSend) {
             if (mQueue.size() >= mQueueSize) {
                 mCv.wait(l, [this]() { return mQueue.size() < mQueueSize; });
+            }
+            if (mIsSendError) {
+                return -1;
             }
             if (isSend) {
                 mQueue.emplace_back(std::make_pair(false, vec));
@@ -117,6 +123,9 @@ int WsServerSession::do_write(char* data, int len, bool async)
     DEBUG("ws send data, remote {}:{}\n", mRemoteIp, mRemotePort);
     std::unique_lock<std::mutex> l(mMutex);
     if (async) {
+        if (mIsSendError) {
+            return -1;
+        }
         // data maybe modify, when function return, need hold data.
         shared_ptr<std::vector<char>> vec = make_shared<std::vector<char>>(data, data + len);
         if (isSend) {
@@ -155,6 +164,8 @@ void WsServerSession::on_write(shared_ptr<std::vector<char>> vec, beast::error_c
     boost::ignore_unused(bytes_transferred);
     if (ec) {
         ERR("ws write error, remote {}:{} msg:{}\n", mRemoteIp, mRemotePort, ec.message());
+        mIsSendError = true;
+        mQueue.clear();
         return;
     }
     if (mQueue.empty()) {

@@ -10,17 +10,13 @@ HttpClient::HttpClient()
     CURLcode ret;
     ret = curl_global_init(CURL_GLOBAL_ALL);
     if (ret != CURLE_OK) {
-        ERR("curl_global_init() failed[{}]: {}\n", ret, curl_easy_strerror(ret));
+        ERR("curl_global_init() failed {}:{}\n", ret, curl_easy_strerror(ret));
         return;
     }
-    mCurl = curl_easy_init();
 }
 
 HttpClient::~HttpClient()
 {
-    if (mCurl) {
-        curl_easy_cleanup(mCurl);
-    }
     curl_global_cleanup();
 }
 
@@ -86,49 +82,58 @@ int HttpClient::request(string url, int post, long timeout, map<string, string>*
     ostringstream oss;
     string p;
     struct curl_slist* headerlist = nullptr;
+    long resp_code = 0;
+
+    CURL* handle = curl_easy_init();
     char* ct = nullptr;
-    curl_easy_setopt(mCurl, CURLOPT_TIMEOUT, timeout);
-    curl_easy_setopt(mCurl, CURLOPT_CONNECTTIMEOUT, 10L);
-    curl_easy_setopt(mCurl, CURLOPT_FOLLOWLOCATION, 1L);
-    curl_easy_setopt(mCurl, CURLOPT_WRITEFUNCTION, HttpClient::WriteString);
-    curl_easy_setopt(mCurl, CURLOPT_WRITEDATA, &oss);
+    curl_easy_setopt(handle, CURLOPT_TIMEOUT, timeout);
+    curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, 10L);
+    curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, HttpClient::WriteString);
+    curl_easy_setopt(handle, CURLOPT_WRITEDATA, &oss);
     if (headers) {
         headerlist = genHeader(headers);
         if (!headerlist) {
             return -1;
         }
-        curl_easy_setopt(mCurl, CURLOPT_HTTPHEADER, headerlist);
+        curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headerlist);
     }
     if (post) {
-        curl_easy_setopt(mCurl, CURLOPT_POST, 1L);
+        curl_easy_setopt(handle, CURLOPT_POST, 1L);
         if (param && !param->empty()) {
             p = genParam(param);
-            curl_easy_setopt(mCurl, CURLOPT_POSTFIELDS, p.c_str());
+            curl_easy_setopt(handle, CURLOPT_POSTFIELDS, p.c_str());
         }
     } else {
-        curl_easy_setopt(mCurl, CURLOPT_HTTPGET, 1L);
+        curl_easy_setopt(handle, CURLOPT_HTTPGET, 1L);
         if (param && !param->empty()) {
             p = genParam(param);
             url += "?" + p;
         }
     }
-    curl_easy_setopt(mCurl, CURLOPT_URL, url.c_str());
-    res = curl_easy_perform(mCurl);
+    curl_easy_setopt(handle, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, 0L);
+    curl_easy_setopt(handle, CURLOPT_SSL_VERIFYHOST, 0L);
+    res = curl_easy_perform(handle);
     if (res != CURLE_OK) {
-        ERR("curl_easy_perform() failed[{}]: {}\n", ret, curl_easy_strerror(res));
+        ERR("curl_easy_perform() failed {}:{}\n", ret, curl_easy_strerror(res));
         ret = -1;
         goto end;
     }
-    curl_easy_getinfo(mCurl, CURLINFO_RESPONSE_CODE, &code);
-    curl_easy_getinfo(mCurl, CURLINFO_CONTENT_TYPE, &ct);
+    curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &resp_code);
+    code = resp_code;
+    curl_easy_getinfo(handle, CURLINFO_CONTENT_TYPE, &ct);
     if (ct) {
         contentType = ct;
     }
     content = oss.str();
-    INFO("http post[{}] url[{}] timeout[{}] form[{}] code[{}] contentType[{}] content[{}]\n", post, url, timeout, p, code, contentType, content);
+    INFO("http post:{} url:{} timeout:{} form:{} code:{} contentType:{} content:{}\n", post, url, timeout, p, code, contentType, content);
 end:
     if (headerlist) {
         curl_slist_free_all(headerlist);
+    }
+    if (handle) {
+        curl_easy_cleanup(handle);
     }
     return ret;
 }

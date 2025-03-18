@@ -49,7 +49,6 @@ private:
             if (!ret) {
                 break;
             }
-            cout << e.id << endl;
             auto it = mHandler.find(e.id);
             if (it == mHandler.end()) {
                 WARN("miss event handler id:{}\n", e.id);

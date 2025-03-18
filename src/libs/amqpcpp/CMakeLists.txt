@@ -1,0 +1,13 @@
+
+if(enable_rabbitmqcpp)
+set(MODULE_NAME rabbitmqcpp)
+file(GLOB_RECURSE SRC_LIST amqpcpp/*.h amqpcpp/*.cpp)
+#add_library(${MODULE_NAME} SHARED ${SRC_LIST})
+add_library(${MODULE_NAME} ${SRC_LIST})
+if(WIN32)
+TARGET_LINK_LIBRARIES(${MODULE_NAME} amqpcpp)
+else()
+TARGET_LINK_LIBRARIES(${MODULE_NAME} amqpcpp libev.a)
+endif()
+INSTALL(TARGETS ${MODULE_NAME} LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+endif()
