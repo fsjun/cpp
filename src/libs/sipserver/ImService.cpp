@@ -210,7 +210,7 @@ void ImService::imCallback(void* token, pjsip_event* e)
     }
 }
 
-void ImService::on_message(pjsip_rx_data* rdata)
+int ImService::on_message(pjsip_rx_data* rdata)
 {
     auto endpoint = Endpoint::GetInstance();
     pjsip_tx_data* tdata = nullptr;
@@ -231,9 +231,10 @@ void ImService::on_message(pjsip_rx_data* rdata)
     if (imListener) {
         imListener->on_rx_request(callId, method, body);
     }
+    return PJ_TRUE;
 }
 
-void ImService::on_info(pjsip_rx_data* rdata)
+int ImService::on_info(pjsip_rx_data* rdata)
 {
     auto endpoint = Endpoint::GetInstance();
     pjsip_tx_data* tdata = nullptr;
@@ -254,6 +255,7 @@ void ImService::on_info(pjsip_rx_data* rdata)
     if (imListener) {
         imListener->on_rx_request(callId, method, body);
     }
+    return PJ_TRUE;
 }
 
 void ImService::CheckPjThread()

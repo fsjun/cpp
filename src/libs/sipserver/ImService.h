@@ -12,8 +12,8 @@ public:
     int sendMessage(string from, string to, string callId, string target_addr, string body);
     int sendOptions(string from, string to, string callId, string target_addr);
 
-    void on_message(pjsip_rx_data* rdata);
-    void on_info(pjsip_rx_data* rdata);
+    int on_message(pjsip_rx_data* rdata);
+    int on_info(pjsip_rx_data* rdata);
 
     static void CheckPjThread();
 

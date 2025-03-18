@@ -10,7 +10,7 @@
 class CallService : public Singleton<CallService>, public std::enable_shared_from_this<CallService> {
 public:
     CallService();
-    void on_incoming_call(pjsip_rx_data* rdata, pjsip_module* mod);
+    pj_status_t on_incoming_call(pjsip_rx_data* rdata, pjsip_module* mod);
     void on_rx_offer2(pjsip_inv_session* inv, struct pjsip_inv_on_rx_offer_cb_param* param);
     void on_state_changed(pjsip_inv_session* inv, pjsip_event* e);
     void on_message(pjsip_rx_data* rdata);

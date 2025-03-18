@@ -451,7 +451,8 @@ void Endpoint::PjsipPerror(const char* filename, int line, string title, pj_stat
     if (pos != std::string::npos) {
         file = file.substr(pos + 1);
     }
-    Log::Print(LOG_LEVEL_ERROR, std::string(__FILE__) + std::string(":") + std::string(CT2STR(__LINE__)), "{}:{} {} {}\n", file.c_str(), line, title.c_str(), errmsg);
+    string fileLine = std::format("{}:{}", file, line);
+    Log::PrintT(true, LOG_LEVEL_ERROR, fileLine, "{} {}", title, errmsg);
 }
 
 void Endpoint::log_writer(int level, const char* buffer, int len)

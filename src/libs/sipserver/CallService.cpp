@@ -34,7 +34,7 @@ int CallService::create_contact_by_config(string user, string contactIp, string&
     if (user.empty()) {
         contact = std::format("<sip:{}:{}>", host, port);
     } else {
-        contact = std::format("<sip:%s@%s:%d>", user, host, port);
+        contact = std::format("<sip:{}@{}:{}>", user, host, port);
     }
     return 0;
 }
@@ -204,7 +204,7 @@ string CallService::getToUser(pjsip_rx_data* rdata)
     return string(sip_uri->user.ptr, sip_uri->user.slen);
 }
 
-void CallService::on_incoming_call(pjsip_rx_data* rdata, pjsip_module* mod)
+pj_status_t CallService::on_incoming_call(pjsip_rx_data* rdata, pjsip_module* mod)
 {
     string contact;
     pj_str_t contact_pj;
@@ -221,7 +221,7 @@ void CallService::on_incoming_call(pjsip_rx_data* rdata, pjsip_module* mod)
     int ret;
     string callId;
     pj_bool_t should_dec_dlg = PJ_FALSE;
-    pj_status_t status;
+    pj_status_t status = PJ_SUCCESS;
     char cname_buf[16] = { 0 };
     shared_ptr<Json::Value> event;
     auto sipCall = make_shared<SipCall>();
@@ -465,6 +465,7 @@ on_return:
         }
         pjsip_dlg_dec_lock(dlg);
     }
+    return status;
 }
 
 void CallService::fix_contact_hdr(pjsip_rx_data* rdata)
@@ -714,6 +715,7 @@ int CallService::makeCall(shared_ptr<SipCall> call, string callId, string from, 
     status = pjsip_dlg_create_uac(pjsip_ua_instance(), &local_uri_pj, &contact_pj, &remote_uri_pj, &target_uri_pj, &call->dlg);
     if (status != PJ_SUCCESS) {
         mEndpoint->PjsipPerror(__FILE__, __LINE__, "Dialog creation failed", status);
+        ERRLN("pjsip_dlg_create_uac failed, local_uri:{} remote_uri:{} target_uri:{}, contact:{}", local_uri, remote_uri, target_uri, contact);
         return -1;
     }
     pj_strdup2_with_null(call->dlg->pool, &call->dlg->call_id->id, callId.c_str());
