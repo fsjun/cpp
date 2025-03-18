@@ -31,7 +31,11 @@ int CallService::create_contact_by_config(string user, string contactIp, string&
         host = contactIp;
     }
     int port = mEndpoint->getPort();
-    contact = boost::str(boost::format("<sip:%s@%s:%d>") % user % host % port);
+    if (user.empty()) {
+        contact = std::format("<sip:{}:{}>", host, port);
+    } else {
+        contact = std::format("<sip:%s@%s:%d>", user, host, port);
+    }
     return 0;
 }
 

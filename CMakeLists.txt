@@ -81,7 +81,7 @@ include_directories(/opt/app/vcpkg/installed/x64-linux/include)
 LINK_DIRECTORIES(/opt/app/vcpkg/installed/x64-linux/debug/lib)
 LINK_DIRECTORIES(/opt/app/vcpkg/installed/x64-linux/debug/lib/manual-link)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -O0 -ggdb")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -O0 -g3")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,-Bstatic -lstdc++ -Wl,-Bdynamic")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--whole-archive -lpthread -Wl,--no-whole-archive")
