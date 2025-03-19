@@ -740,7 +740,12 @@ int CallService::makeCall(shared_ptr<SipCall> call, string callId, string from, 
     }
     pjsip_host_port via_addr = { { (char*)viaIp.c_str(), (long)viaIp.size() }, mEndpoint->mPort };
     pjsip_dlg_set_via_sent_by(call->dlg, &via_addr, (pjsip_transport*)mEndpoint->mTransport);
-    pjmedia_sdp_parse(call->pool, (char*)local_sdp.c_str(), local_sdp.size(), &sdp_session);
+    status = pjmedia_sdp_parse(call->pool, (char*)local_sdp.c_str(), local_sdp.size(), &sdp_session);
+    if (status != PJ_SUCCESS) {
+        mEndpoint->PjsipPerror(__FILE__, __LINE__, "sdp parse error", status);
+        ERRLN("invalid sdp:\n{}", local_sdp);
+        goto on_error;
+    }
     // options |= PJSIP_INV_SUPPORT_100REL;
     // options |= PJSIP_INV_REQUIRE_100REL;
     // options |= PJSIP_INV_SUPPORT_TIMER;
