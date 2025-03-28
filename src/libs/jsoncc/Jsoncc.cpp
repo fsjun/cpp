@@ -44,6 +44,7 @@ string Jsoncc::JsonToString(Json::Value& root)
 {
     Json::StreamWriterBuilder writerBuilder;
     writerBuilder.settings_["emitUTF8"] = true;
+    writerBuilder.settings_["indentation"] = "";
     string str = Json::writeString(writerBuilder, root);
     return str;
 }
