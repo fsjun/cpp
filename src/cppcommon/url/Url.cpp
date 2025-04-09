@@ -2,13 +2,16 @@
 #include <algorithm>
 #include <cctype>
 #include <string>
+#include <format>
 
 using std::distance;
 using std::search;
 
 map<string, int> Url::sDefaultPortMap = {
     { "http", 80 },
-    { "https", 443 }
+    { "https", 443 },
+    { "ws", 80 },
+    { "wss", 443 }
 };
 
 int Url::parse(string url_s)
@@ -34,10 +37,9 @@ int Url::parse(string url_s)
             return 0;
         }
         path_i = find(port_i, url_s.end(), '/');
-        string port_str;
-        port_str.reserve(distance(port_i, path_i));
-        copy(port_i, path_i, back_inserter(port_str));
-        port = std::stoi(port_str);
+        portStr.reserve(distance(port_i, path_i));
+        copy(port_i, path_i, back_inserter(portStr));
+        port = std::stoi(portStr);
         if (path_i == url_s.end()) {
             return 0;
         }
@@ -116,4 +118,20 @@ string Url::get(string key)
         return "";
     }
     return it->second;
+}
+
+string Url::genHostString()
+{
+    string hostString;
+    if (portStr.empty()) {
+        hostString = std::format("{}://{}", protocol, host);
+    } else {
+        hostString = std::format("{}://{}:{}", protocol, host, portStr);
+    }
+    return hostString;
+}
+
+string Url::genPathString()
+{
+    return std::format("{}{}", path, query);
 }
