@@ -57,7 +57,7 @@ void Amqpcpp::stop()
 
 void Amqpcpp::onMessage(const AMQP::Message& message, uint64_t deliveryTag, bool redelivered)
 {
-    mChannel->ack(deliveryTag);
+    mReceiveChannel->ack(deliveryTag);
     string msg(message.body(), message.bodySize());
     if (mCallback) {
         mCallback(msg);
@@ -89,12 +89,13 @@ int Amqpcpp::connect()
     mHandler = make_shared<AMQP::LibEvHandler>(loop);
     AMQP::Address address(std::format("amqp://{}:{}@{}:{}/{}", mUser, mUserPwd, mHost, mPort, mVhost));
     mConnection = make_shared<AMQP::TcpConnection>(mHandler.get(), address);
-    mChannel = make_shared<AMQP::TcpChannel>(mConnection.get());
-    mReliable = make_shared<AMQP::Reliable<>>(*mChannel);
-    mChannel->onError([](const char* message) {
+    mReceiveChannel = make_shared<AMQP::TcpChannel>(mConnection.get());
+    mSendChannel = make_shared<AMQP::TcpChannel>(mConnection.get());
+    mReliable = make_shared<AMQP::Reliable<>>(*mSendChannel);
+    mReceiveChannel->onError([](const char* message) {
         ERRLN("channel error: {}", message);
     });
-    mChannel->onReady([weak]() {
+    mReceiveChannel->onReady([weak]() {
         auto self = weak.lock();
         if (!self) {
             return;
@@ -112,9 +113,9 @@ void Amqpcpp::onReady()
         return;
     }
     auto weak = weak_from_this();
-    mChannel->declareExchange(mExchangeName, AMQP::direct, AMQP::durable);
-    mChannel->declareQueue(mQueueName, AMQP::durable + AMQP::autodelete);
-    mChannel->bindQueue(mExchangeName, mQueueName, mBindingKey);
+    mReceiveChannel->declareExchange(mExchangeName, AMQP::direct, AMQP::durable);
+    mReceiveChannel->declareQueue(mQueueName, AMQP::durable + AMQP::autodelete);
+    mReceiveChannel->bindQueue(mExchangeName, mQueueName, mBindingKey);
 
     // callback function that is called when the consume operation starts
     auto startCb = [](const std::string& consumertag) {
@@ -142,7 +143,7 @@ void Amqpcpp::onReady()
     };
 
     // start consuming from the queue, and install the callbacks
-    mChannel->consume(mQueueName)
+    mReceiveChannel->consume(mQueueName)
         .onReceived(messageCb)
         .onSuccess(startCb)
         .onCancelled(cancelledCb)
@@ -163,14 +164,18 @@ int Amqpcpp::disconnect()
 {
     std::lock_guard l(mMutex);
     mIsReady = false;
-    if (mChannel) {
-        mChannel->close();
+    if (mReceiveChannel) {
+        mReceiveChannel->close();
+    }
+    if (mSendChannel) {
+        mSendChannel->close();
     }
     if (mConnection) {
         mConnection->close(true);
     }
     mConnection.reset();
-    mChannel.reset();
+    mReceiveChannel.reset();
+    mSendChannel.reset();
     mHandler.reset();
     return 0;
 }
@@ -199,7 +204,7 @@ int Amqpcpp::send(string routingKey, string msg)
 {
     std::lock_guard<std::mutex> l(mMutex);
     INFO("send ok exchange:{} routingKey:{} msg:{}\n", mExchangeName.c_str(), routingKey.c_str(), msg.c_str());
-    if (mIsReady && mChannel) {
+    if (mIsReady && mSendChannel) {
         doSend(routingKey, msg);
     } else {
         mSendList.emplace_back(routingKey, msg);

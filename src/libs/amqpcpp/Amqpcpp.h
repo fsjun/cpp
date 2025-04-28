@@ -52,7 +52,8 @@ private:
     bool mIsReady = false;
     std::list<std::pair<string, string>> mSendList;
     shared_ptr<AMQP::TcpConnection> mConnection;
-    shared_ptr<AMQP::TcpChannel> mChannel;
+    shared_ptr<AMQP::TcpChannel> mReceiveChannel;
+    shared_ptr<AMQP::TcpChannel> mSendChannel;
     shared_ptr<AMQP::LibEvHandler> mHandler;
     shared_ptr<AMQP::Reliable<>> mReliable;
     int mSendCount = 0;
