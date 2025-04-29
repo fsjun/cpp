@@ -1,4 +1,4 @@
-#include "threadpool/StateThreadPool.h"
+#include "threadpool/ThreadPoolState.h"
 #include "threadpool/ThreadPool.h"
 #include "gtest/gtest.h"
 #include <condition_variable>
@@ -31,7 +31,7 @@ protected:
 
 public:
     unique_ptr<ThreadPool> threadPool;
-    unique_ptr<StateThreadPool> stateThreadPool;
+    unique_ptr<ThreadPoolState> stateThreadPool;
 };
 
 TEST_F(ThreadPoolTest, threadPool)
@@ -62,7 +62,7 @@ TEST_F(ThreadPoolTest, stateThreadPool)
     bool result = false;
     set<string> s;
     while (count < 300000) {
-        stateThreadPool.reset(new StateThreadPool(10, 10));
+        stateThreadPool.reset(new ThreadPoolState(10, 10));
         result = false;
         while (!result) {
             int id = count % 3;

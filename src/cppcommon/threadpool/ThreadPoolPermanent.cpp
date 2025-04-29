@@ -1,22 +1,22 @@
-#include "PermanentThreadPool.h"
+#include "ThreadPoolPermanent.h"
 #include "osinfo/OsSignal.h"
 #include "osinfo/ThreadInfo.h"
 #include "osinfo/TraceInfo.h"
 #include "threadpool/ThreadPoolBase.h"
 
-PermanentThreadPool::PermanentThreadPool(int maxSize, int queueMaxSize) : ThreadPoolBase(0, maxSize, queueMaxSize)
+ThreadPoolPermanent::ThreadPoolPermanent(int maxSize, int queueMaxSize) : ThreadPoolBase(0, maxSize, queueMaxSize)
 {
 }
 
-PermanentThreadPool::PermanentThreadPool(int minSize, int maxSize, int queueMaxSize) : ThreadPoolBase(minSize, maxSize, queueMaxSize)
+ThreadPoolPermanent::ThreadPoolPermanent(int minSize, int maxSize, int queueMaxSize) : ThreadPoolBase(minSize, maxSize, queueMaxSize)
 {
 }
 
-PermanentThreadPool::~PermanentThreadPool()
+ThreadPoolPermanent::~ThreadPoolPermanent()
 {
 }
 
-int PermanentThreadPool::startThread(string stateId)
+int ThreadPoolPermanent::startThread(string stateId)
 {
     std::unique_lock<mutex> l(mMutex);
     mOwner = ThreadInfo::GetTid();
@@ -50,7 +50,7 @@ int PermanentThreadPool::startThread(string stateId)
     return 0;
 }
 
-void PermanentThreadPool::stopThread(string stateId)
+void ThreadPoolPermanent::stopThread(string stateId)
 {
     std::unique_lock<mutex> l(mMutex);
     mOwner = ThreadInfo::GetTid();
@@ -76,7 +76,7 @@ void PermanentThreadPool::stopThread(string stateId)
     mOwner = 0;
 }
 
-int PermanentThreadPool::execute(string stateId, function<void()> task)
+int ThreadPoolPermanent::execute(string stateId, function<void()> task)
 {
     std::unique_lock<mutex> l(mMutex);
     mOwner = ThreadInfo::GetTid();

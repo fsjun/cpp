@@ -1,21 +1,21 @@
-#include "StateThreadPool.h"
+#include "ThreadPoolState.h"
 #include "osinfo/ThreadInfo.h"
 #include "threadpool/ThreadPoolBase.h"
 #include <ranges>
 
-StateThreadPool::StateThreadPool(int maxSize, int queueMaxSize) : ThreadPoolBase(0, maxSize, queueMaxSize)
+ThreadPoolState::ThreadPoolState(int maxSize, int queueMaxSize) : ThreadPoolBase(0, maxSize, queueMaxSize)
 {
 }
 
-StateThreadPool::StateThreadPool(int minSize, int maxSize, int queueMaxSize) : ThreadPoolBase(minSize, maxSize, queueMaxSize)
+ThreadPoolState::ThreadPoolState(int minSize, int maxSize, int queueMaxSize) : ThreadPoolBase(minSize, maxSize, queueMaxSize)
 {
 }
 
-StateThreadPool::~StateThreadPool()
+ThreadPoolState::~ThreadPoolState()
 {
 }
 
-int StateThreadPool::execute(string stateId, function<void()> task)
+int ThreadPoolState::execute(string stateId, function<void()> task)
 {
     std::unique_lock<mutex> l(mMutex);
     mOwner = ThreadInfo::GetTid();

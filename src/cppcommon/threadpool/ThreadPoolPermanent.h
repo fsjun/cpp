@@ -9,11 +9,11 @@ using std::thread;
 using std::unique_ptr;
 using std::vector;
 
-class PermanentThreadPool : public ThreadPoolBase {
+class ThreadPoolPermanent : public ThreadPoolBase {
 public:
-    PermanentThreadPool(int maxSize, int queueMaxSize);
-    PermanentThreadPool(int minSize, int maxSize, int queueMaxSize);
-    ~PermanentThreadPool();
+    ThreadPoolPermanent(int maxSize, int queueMaxSize);
+    ThreadPoolPermanent(int minSize, int maxSize, int queueMaxSize);
+    ~ThreadPoolPermanent();
     int startThread(string stateId);
     void stopThread(string stateId);
     int execute(string stateId, function<void()> task);
