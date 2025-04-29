@@ -40,8 +40,8 @@ public:
         mHandler = handler;
     }
 
-private:
-    void thread_func() noexcept {
+protected:
+    virtual void thread_func() noexcept {
         bool ret;
         while (mRuning) {
             Event<T> e;
@@ -66,7 +66,7 @@ private:
         threadManager->push(this->shared_from_this());
     }
 
-private:
+protected:
     bool mRuning = true;
     Queue<Event<T>> mQueue;
     unique_ptr<Thread> mThread;

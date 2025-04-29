@@ -2,7 +2,8 @@
 #include "threadpool/ThreadManager.h"
 #include <memory>
 
-DelayedThread::DelayedThread()
+DelayedThread::DelayedThread(int queueMaxSize)
+    : mTasks(queueMaxSize)
 {
 }
 
@@ -10,16 +11,32 @@ DelayedThread::~DelayedThread()
 {
 }
 
+void DelayedThread::setId(string val)
+{
+    mId = val;
+}
+
+string DelayedThread::getId()
+{
+    return mId;
+}
+
 int DelayedThread::start()
 {
     mThread = std::make_unique<Thread>();
-    mThread->start(std::bind(&DelayedThread::thread_func, shared_from_this()));
+    auto weak = weak_from_this();
+    mThread->start([weak]() {
+        auto self = weak.lock();
+        if (!self) {
+            return;
+        }
+        self->thread_func();
+    });
     return 0;
 }
 
 void DelayedThread::stop()
 {
-    mRuning = false;
     mTasks.destroy();
 }
 
@@ -58,16 +75,34 @@ bool DelayedThread::execute_block(function<void()> func)
     return ret;
 }
 
+bool DelayedThread::expire(int diff)
+{
+    if (mLastActiveTime == 0) {
+        return false;
+    }
+    if (mTasks.size() > 0) {
+        return false;
+    }
+    uint64_t now = Tools::Now();
+    return now - mLastActiveTime > diff;
+}
+
+int DelayedThread::size()
+{
+    return mTasks.size();
+}
+
 void DelayedThread::thread_func() noexcept
 {
     bool ret;
-    while (mRuning) {
+    while (mRunning) {
         function<void()> func;
         ret = mTasks.pop(func);
         if (!ret) {
             break;
         }
         func();
+        mLastActiveTime = Tools::Now();
     }
     clearThread();
 }

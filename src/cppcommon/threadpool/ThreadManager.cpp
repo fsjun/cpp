@@ -1,8 +1,18 @@
 #include "threadpool/ThreadManager.h"
 #include <memory>
 
+int ThreadManager::Start()
+{
+    auto threadManager = ThreadManager::GetInstance();
+    threadManager->start();
+}
+
 int ThreadManager::start()
 {
+    std::lock_guard l(mMutex);
+    if (mRuning) {
+        return 0;
+    }
     mRuning = true;
     mThread = std::make_unique<Thread>();
     mThread->start(std::bind(&ThreadManager::thread_func, shared_from_this()));
@@ -11,6 +21,10 @@ int ThreadManager::start()
 
 int ThreadManager::stop()
 {
+    std::lock_guard l(mMutex);
+    if (!mRuning) {
+        return 0;
+    }
     mRuning = false;
     mDeadThreadQueue.destroy();
     return 0;
