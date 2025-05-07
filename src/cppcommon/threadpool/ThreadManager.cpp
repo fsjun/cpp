@@ -5,6 +5,7 @@ int ThreadManager::Start()
 {
     auto threadManager = ThreadManager::GetInstance();
     threadManager->start();
+    return 0;
 }
 
 int ThreadManager::start()
