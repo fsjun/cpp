@@ -1,5 +1,6 @@
 #include "redispp/Redispp.h"
 #include "sw/redis++/errors.h"
+#include "sw/redis++/reply.h"
 #include <exception>
 
 void Redispp::init(options opt)
@@ -22,6 +23,11 @@ void Redispp::init(options opt)
     
         if (mOptions.cluster) {
             mRedisCluster = make_shared<RedisCluster>(connection_options, pool_options);
+            auto reply = mRedisCluster->command("CLUSTER", "NODES");
+            if (reply && reply::is_string(*reply)) {
+                string result = reply->str ? reply->str : "";
+                INFOLN("cluster nodes, result:{}", result);
+            }
         } else {
             mRedis = make_shared<Redis>(connection_options, pool_options);
         }
