@@ -64,7 +64,7 @@ bool Redispp::expire(string key, long long timeout)
             ERRLN("redis connection is nullptr");
         }
     } catch (std::exception& e) {
-        ERRLN("error redis keys, exception:{}", e.what());
+        ERRLN("error redis expire, exception:{}", e.what());
     }
     return ret;
 }
@@ -81,7 +81,7 @@ int Redispp::del(string key)
             ERRLN("redis connection is nullptr");
         }
     } catch (std::exception& e) {
-        ERRLN("error redis keys, exception:{}", e.what());
+        ERRLN("error redis del, exception:{}", e.what());
     }
     return ret;
 }
@@ -98,7 +98,7 @@ std::optional<string> Redispp::get(string key)
             ERRLN("redis connection is nullptr");
         }
     } catch (std::exception& e) {
-        ERRLN("error redis keys, exception:{}", e.what());
+        ERRLN("error redis get, exception:{}", e.what());
     }
     return value;
 }
@@ -114,7 +114,7 @@ void Redispp::hgetall(string key, unordered_map<string, string>& results)
             ERRLN("redis connection is nullptr");
         }
     } catch (std::exception& e) {
-        ERRLN("error redis keys, exception:{}", e.what());
+        ERRLN("error redis hgetall, exception:{}", e.what());
     }
 }
 
@@ -130,7 +130,7 @@ int Redispp::hset(string key, string field, string value)
             ERRLN("redis connection is nullptr");
         }
     } catch (std::exception& e) {
-        ERRLN("error redis keys, exception:{}", e.what());
+        ERRLN("error redis hset, exception:{}", e.what());
     }
     return ret;
 }
@@ -147,7 +147,7 @@ std::optional<string> Redispp::hget(string key, string field)
             ERRLN("redis connection is nullptr");
         }
     } catch (std::exception& e) {
-        ERRLN("error redis keys, exception:{}", e.what());
+        ERRLN("error redis hget, exception:{}", e.what());
     }
     return value;
 }
@@ -164,7 +164,7 @@ bool Redispp::hexists(string key, string field)
             ERRLN("redis connection is nullptr");
         }
     } catch (std::exception& e) {
-        ERRLN("error redis keys, exception:{}", e.what());
+        ERRLN("error redis hexists, exception:{}", e.what());
     }
     return ret;
 }
@@ -181,7 +181,7 @@ int Redispp::hdel(string key, string field)
             ERRLN("redis connection is nullptr");
         }
     } catch (std::exception& e) {
-        ERRLN("error redis keys, exception:{}", e.what());
+        ERRLN("error redis hdel, exception:{}", e.what());
     }
     return ret;
 }
@@ -197,7 +197,7 @@ void Redispp::hmset(string key, map<string, string> input)
             ERRLN("redis connection is nullptr");
         }
     } catch (std::exception& e) {
-        ERRLN("error redis keys, exception:{}", e.what());
+        ERRLN("error redis hmset, exception:{}", e.what());
     }
 }
 
@@ -212,6 +212,38 @@ void Redispp::hmget(string key, vector<string> fields, vector<std::optional<stri
             ERRLN("redis connection is nullptr");
         }
     } catch (std::exception& e) {
-        ERRLN("error redis keys, exception:{}", e.what());
+        ERRLN("error redis hmget, exception:{}", e.what());
+    }
+}
+
+int Redispp::sadd(string key, string value)
+{
+    int ret = -1;
+    try {
+        if (mOptions.cluster && mRedisCluster) {
+            ret = mRedisCluster->sadd(key, value);
+        } else if (mRedis) {
+            ret = mRedis->sadd(key, value);
+        } else {
+            ERRLN("redis connection is nullptr");
+        }
+    } catch (std::exception& e) {
+        ERRLN("error redis sadd, exception:{}", e.what());
+    }
+    return ret;
+}
+
+void Redispp::smembers(string key, std::unordered_set<string> result)
+{
+    try {
+        if (mOptions.cluster && mRedisCluster) {
+            mRedisCluster->smembers(key, std::inserter(result, result.begin()));
+        } else if (mRedis) {
+            mRedis->smembers(key, std::inserter(result, result.begin()));
+        } else {
+            ERRLN("redis connection is nullptr");
+        }
+    } catch (std::exception& e) {
+        ERRLN("error redis smembers, exception:{}", e.what());
     }
 }
