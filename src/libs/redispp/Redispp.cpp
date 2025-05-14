@@ -233,7 +233,7 @@ int Redispp::sadd(string key, string value)
     return ret;
 }
 
-void Redispp::smembers(string key, std::unordered_set<string> result)
+void Redispp::smembers(string key, std::unordered_set<string>& result)
 {
     try {
         if (mOptions.cluster && mRedisCluster) {

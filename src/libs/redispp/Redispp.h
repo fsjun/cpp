@@ -36,7 +36,7 @@ public:
     void hmget(string key, vector<string> fields, vector<std::optional<string>>& results);
 
     int sadd(string key, string value);
-    void smembers(string key, std::unordered_set<string> result);
+    void smembers(string key, std::unordered_set<string>& result);
 
 private:
     struct options mOptions;
