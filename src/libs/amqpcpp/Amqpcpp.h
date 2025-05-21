@@ -46,10 +46,13 @@ private:
     int doSend(string routingKey, string msg);
     void internalBreak();
 
+    void addSendMessage(string routingKey, string msg);
+    std::list<std::pair<string, string>> getSendMessage();
+
 private:
     bool mIsRun = true;
-    std::mutex mMutex;
     bool mIsReady = false;
+    std::mutex mMutex;
     std::list<std::pair<string, string>> mSendList;
     shared_ptr<AMQP::TcpConnection> mConnection;
     shared_ptr<AMQP::TcpChannel> mReceiveChannel;
@@ -73,4 +76,5 @@ private:
     function<int(string)> mCallback;
     shared_ptr<Thread> mThread;
     ev_async mAsyncWatcher;
+    struct ev_loop* mLoop = nullptr;
 };

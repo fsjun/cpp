@@ -23,6 +23,11 @@ int Amqpcpp::init(struct options opt, bool sendOnly)
     mRoutingKey = opt.routingkey;
     mChannelNumber = 1;
     mSendOnly = sendOnly;
+
+    mLoop = EV_DEFAULT;
+    ev_async_init(&mAsyncWatcher, AsyncCallback);
+    mAsyncWatcher.data = this;
+    ev_async_start(mLoop, &mAsyncWatcher);
     return 0;
 }
 
@@ -41,18 +46,17 @@ int Amqpcpp::start()
     return 0;
 }
 
-void Amqpcpp::AsyncCallback(EV_P_ ev_async*, int)
+void Amqpcpp::AsyncCallback(EV_P_ ev_async* w, int revents)
 {
-    ev_break(loop, EVBREAK_ALL);
+    Amqpcpp* self = static_cast<Amqpcpp*>(w->data);
+    self->sendPendingList();
+    self->internalBreak();
 }
 
 void Amqpcpp::stop()
 {
     mIsRun = false;
-    // struct ev_loop* loop = EV_DEFAULT;
-    // ev_async_init(&mAsyncWatcher, AsyncCallback);
-    // ev_async_start(loop, &mAsyncWatcher);
-    // ev_async_send(loop, &mAsyncWatcher);
+    ev_async_send(mLoop, &mAsyncWatcher);
 }
 
 void Amqpcpp::onMessage(const AMQP::Message& message, uint64_t deliveryTag, bool redelivered)
@@ -66,14 +70,13 @@ void Amqpcpp::onMessage(const AMQP::Message& message, uint64_t deliveryTag, bool
 
 void Amqpcpp::threadFunc()
 {
-    struct ev_loop* loop = EV_DEFAULT;
     int loopCount = 0;
     while (mIsRun || loopCount == 0) {
         ++loopCount;
         disconnect();
         connect();
         // run the loop
-        ev_run(loop, 0);
+        ev_run(mLoop, 0);
         if (mIsRun) {
             INFOLN("ev_run return count:{} reconnect after 2s", loopCount);
             std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -85,8 +88,7 @@ void Amqpcpp::threadFunc()
 int Amqpcpp::connect()
 {
     auto weak = weak_from_this();
-    struct ev_loop* loop = EV_DEFAULT;
-    mHandler = make_shared<AMQP::LibEvHandler>(loop);
+    mHandler = make_shared<AMQP::LibEvHandler>(mLoop);
     AMQP::Address address(std::format("amqp://{}:{}@{}:{}/{}", mUser, mUserPwd, mHost, mPort, mVhost));
     mConnection = make_shared<AMQP::TcpConnection>(mHandler.get(), address);
     mReceiveChannel = make_shared<AMQP::TcpChannel>(mConnection.get());
@@ -109,6 +111,10 @@ int Amqpcpp::connect()
 
 void Amqpcpp::onReady()
 {
+    {
+        std::lock_guard l(mMutex);
+        mIsReady = true;
+    }
     if (mSendOnly) {
         return;
     }
@@ -152,12 +158,10 @@ void Amqpcpp::onReady()
 
 void Amqpcpp::sendPendingList()
 {
-    std::lock_guard l(mMutex);
-    mIsReady = true;
-    for (auto [routingKey, msg] : mSendList) {
+    auto sendList = getSendMessage();
+    for (auto [routingKey, msg] : sendList) {
         doSend(routingKey, msg);
     }
-    mSendList.clear();
 }
 
 int Amqpcpp::disconnect()
@@ -202,12 +206,11 @@ int Amqpcpp::send(string routingKey, Json::Value& root)
 
 int Amqpcpp::send(string routingKey, string msg)
 {
-    std::lock_guard<std::mutex> l(mMutex);
     INFO("send ok exchange:{} routingKey:{} msg:{}\n", mExchangeName.c_str(), routingKey.c_str(), msg.c_str());
+    addSendMessage(routingKey, msg);
+    std::lock_guard<std::mutex> l(mMutex);
     if (mIsReady && mSendChannel) {
-        doSend(routingKey, msg);
-    } else {
-        mSendList.emplace_back(routingKey, msg);
+        ev_async_send(mLoop, &mAsyncWatcher);
     }
     return 0;
 }
@@ -247,8 +250,7 @@ int Amqpcpp::doSend(string routingKey, string msg)
 void Amqpcpp::internalBreak()
 {
     if (!mIsRun) {
-        struct ev_loop* loop = EV_DEFAULT;
-        ev_break(loop, EVBREAK_ALL);
+        ev_break(mLoop, EVBREAK_ALL);
     }
 }
 
@@ -257,4 +259,17 @@ void Amqpcpp::join()
     if (mThread) {
         mThread->join();
     }
+}
+
+void Amqpcpp::addSendMessage(string routingKey, string msg)
+{
+    std::lock_guard l(mMutex);
+    mSendList.emplace_back(routingKey, msg);
+}
+
+std::list<std::pair<string, string>> Amqpcpp::getSendMessage()
+{
+    std::lock_guard l(mMutex);
+    std::list<std::pair<string, string>> sendList = std::move(mSendList);
+    return sendList;
 }
