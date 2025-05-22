@@ -6,6 +6,8 @@
 #include <mutex>
 #include <thread>
 
+using std::make_shared;
+
 Amqpcpp::~Amqpcpp()
 {
 }
