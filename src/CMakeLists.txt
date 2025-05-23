@@ -5,6 +5,7 @@
 include_directories(cppcommon)
 include_directories(libs)
 
+INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/src/log/ DESTINATION include FILES_MATCHING PATTERN "log/*.h")
 INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/src/cppcommon/ DESTINATION include FILES_MATCHING PATTERN "*.h")
 INSTALL(DIRECTORY ${CMAKE_SOURCE_DIR}/src/libs/ DESTINATION include FILES_MATCHING PATTERN "*.h")
 
@@ -22,7 +23,7 @@ else()
 endif()
 
 set(MODULE_NAME cppcommon)
-file(GLOB_RECURSE SRC_LIST cppcommon/*.h cppcommon/*.cpp)
+file(GLOB_RECURSE SRC_LIST log/*.h log/*.cpp cppcommon/*.h cppcommon/*.cpp)
 add_library(${MODULE_NAME} ${SRC_LIST})
 if(WIN32)
 TARGET_LINK_LIBRARIES(${MODULE_NAME} boost_system-vc140-mt-gd boost_program_options-vc140-mt-gd crypt32 Ws2_32 Wldap32 Normaliz libssl libcrypto)

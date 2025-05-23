@@ -90,6 +90,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc")
 else()
 endif()
 
+include_directories(src)
+
 ADD_DEFINITIONS(-DBOOST_UUID_RANDOM_PROVIDER_FORCE_POSIX -DBOOST_ASIO_DISABLE_SMALL_BLOCK_RECYCLING)
 
 if(WIN32)
