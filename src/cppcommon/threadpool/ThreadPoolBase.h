@@ -41,7 +41,8 @@ protected:
     std::condition_variable mCv;
     bool mRunning = false;
     string mTimerId = "threadPoolTimer";
-    long mTime = 30;
+    long mTime = 70000;
+    long mExpireDuration = 60;
     list<shared_ptr<DelayedThread>> mIdleThreads;
     list<shared_ptr<DelayedThread>> mWorkerThreads;
 };

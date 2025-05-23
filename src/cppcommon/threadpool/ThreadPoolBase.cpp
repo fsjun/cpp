@@ -78,7 +78,7 @@ void ThreadPoolBase::onThreadExpired(shared_ptr<DelayedThread> thread)
 {
     std::lock_guard l(mMutex);
     if (mRunning) {
-        if (!thread->expire()) {
+        if (!thread->expire(mExpireDuration)) {
             startThreadTimer(thread);
             return;
         }
