@@ -29,13 +29,13 @@ int HttpSyncClientSession::connect()
     boost::system::error_code ec;
     auto const results = resolver.resolve(mHost.c_str(), port.c_str(), ec);
     if (ec) {
-        ERR("resolve error, host:{} port:{} msg:{}\n", mHost, port, ec.message());
+        ERRLN("resolve error, host:{} port:{} msg:{}\n", mHost, port, ec.message());
         return -1;
     }
     mStream = std::make_unique<beast::tcp_stream>(mIoc);
     mStream->connect(results, ec);
     if (ec) {
-        ERR("connect error, host:{} port:{} msg:{}\n", mHost, port, ec.message());
+        ERRLN("connect error, host:{} port:{} msg:{}\n", mHost, port, ec.message());
         return -1;
     }
     return 0;
@@ -49,7 +49,7 @@ void HttpSyncClientSession::close()
     beast::error_code ec;
     mStream->socket().shutdown(tcp::socket::shutdown_both, ec);
     if (ec) {
-        ERR("close error, host:{} port:{} msg:{}\n", mHost, mPort, ec.message());
+        ERRLN("close error, host:{} port:{} msg:{}\n", mHost, mPort, ec.message());
     }
     mStream.reset();
 }
@@ -81,11 +81,11 @@ int HttpSyncClientSession::httpGet(string path, vector<map<string, string>> head
     int code = res.result_int();
     string reason = res.reason();
     if (code / 100 != 2) {
-        ERR("http fail, path:{} code:{} reason:{}\n", path, code, reason);
+        ERRLN("http fail, path:{} code:{} reason:{}\n", path, code, reason);
         return -1;
     }
     body = res.body();
-    INFO("http success, path:{} code:{} reason:{} body:{}\n", path, code, reason, body);
+    INFOLN("http success, path:{} code:{} reason:{} body:{}\n", path, code, reason, body);
     return 0;
 }
 
@@ -123,11 +123,11 @@ int HttpSyncClientSession::httpPost(string path, vector<map<string, string>> hea
     int code = res.result_int();
     string reason = res.reason();
     if (code / 100 != 2) {
-        ERR("http fail, path:{} code:{} reason:{}\n", path, code, reason);
+        ERRLN("http fail, path:{} code:{} reason:{}\n", path, code, reason);
         return -1;
     }
     body = res.body();
-    INFO("http success, path:{} content:{} code:{} reason:{} body:{}\n", path, content, code, reason, body);
+    INFOLN("http success, path:{} content:{} code:{} reason:{} body:{}\n", path, content, code, reason, body);
     return 0;
 }
 
@@ -165,10 +165,10 @@ int HttpSyncClientSession::httpMethod(string path, boost::beast::http::verb meth
     int code = res.result_int();
     string reason = res.reason();
     if (code / 100 != 2) {
-        ERR("http fail, path:{} code:{} reason:{}\n", path, code, reason);
+        ERRLN("http fail, path:{} code:{} reason:{}\n", path, code, reason);
         return -1;
     }
     body = res.body();
-    INFO("http success, path:{} content:{} code:{} reason:{} body:{}\n", path, content, code, reason, body);
+    INFOLN("http success, path:{} content:{} code:{} reason:{} body:{}\n", path, content, code, reason, body);
     return 0;
 }

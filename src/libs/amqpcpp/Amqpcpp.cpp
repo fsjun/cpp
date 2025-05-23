@@ -195,12 +195,12 @@ int Amqpcpp::setCallback(function<int(string)> func)
 int Amqpcpp::send(string routingKey, Json::Value& root)
 {
     if (root.empty()) {
-        ERR("the content of send is empty for routingKey:{}\n", routingKey);
+        ERRLN("the content of send is empty for routingKey:{}\n", routingKey);
         return -1;
     }
     string sendString = Jsoncc::JsonToString(root);
     if (sendString.empty()) {
-        ERR("jsoncpp gen error");
+        ERRLN("jsoncpp gen error");
         return -1;
     }
     return send(routingKey, sendString);
@@ -208,7 +208,7 @@ int Amqpcpp::send(string routingKey, Json::Value& root)
 
 int Amqpcpp::send(string routingKey, string msg)
 {
-    INFO("send ok exchange:{} routingKey:{} msg:{}\n", mExchangeName.c_str(), routingKey.c_str(), msg.c_str());
+    INFOLN("send ok exchange:{} routingKey:{} msg:{}\n", mExchangeName.c_str(), routingKey.c_str(), msg.c_str());
     addSendMessage(routingKey, msg);
     std::lock_guard<std::mutex> l(mMutex);
     if (mIsReady && mSendChannel) {

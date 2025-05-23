@@ -23,7 +23,7 @@ shared_ptr<UdpTransport> TransportManager::addUdpTransport()
 #ifdef _WIN32
 string TransportManager::getLocalIp()
 {
-    PIP_ADAPTER_INFO pIpAdapterInfo = new IP_ADAPTER_INFO();
+    PIP_ADAPTER_INFOLN pIpAdapterInfo = new IP_ADAPTER_INFOLN();
     unsigned long stSize = sizeof(IP_ADAPTER_INFO);
     string ip;
     int nRel = GetAdaptersInfo(pIpAdapterInfo, &stSize);

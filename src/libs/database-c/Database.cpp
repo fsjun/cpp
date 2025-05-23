@@ -31,7 +31,7 @@ int Database::connect()
     if (mConnection == NULL) {
         mConnection = mysql_init(NULL);
         if (!mConnection) {
-            ERR("Database::mysql init error\n");
+            ERRLN("Database::mysql init error\n");
             return -1;
         }
         char argBool = 1;
@@ -43,7 +43,7 @@ int Database::connect()
         mysql_options(mConnection, MYSQL_OPT_WRITE_TIMEOUT, &argInt);
 
         if (mysql_real_connect(mConnection, mIp.c_str(), mName.c_str(), mPasswd.c_str(), mDb.c_str(), mPort, NULL, 0) == NULL) {
-            ERR("Database::mysql real connect error:{}\n", mysql_error(mConnection));
+            ERRLN("Database::mysql real connect error:{}\n", mysql_error(mConnection));
 
             mysql_close(mConnection);
             mConnection = NULL;
@@ -64,7 +64,7 @@ int Database::execSql(string sql)
 
     int result = mysql_real_query(mConnection, sql.c_str(), sql.size());
     if (result != 0) {
-        ERR("sql[{}], error code:{}:{}\n", sql, result, mysql_error(mConnection));
+        ERRLN("sql[{}], error code:{}:{}\n", sql, result, mysql_error(mConnection));
         return -1;
     }
 
@@ -81,7 +81,7 @@ int Database::execSql(string sql, vector<map<string, string>>& result)
 
     int errorCode = mysql_real_query(mConnection, sql.c_str(), sql.size());
     if (errorCode != 0) {
-        ERR("sql[{}], error code:{}:{}\n", sql, errorCode, mysql_error(mConnection));
+        ERRLN("sql[{}], error code:{}:{}\n", sql, errorCode, mysql_error(mConnection));
         return -1;
     }
 
@@ -94,7 +94,7 @@ int Database::execSql(string sql, vector<map<string, string>>& result)
     result_res = mysql_use_result(mConnection);
 
     if (result_res == NULL) {
-        ERR("sql[{}], error:{}\n", sql, mysql_error(mConnection));
+        ERRLN("sql[{}], error:{}\n", sql, mysql_error(mConnection));
         return -1;
     }
 

@@ -11,7 +11,7 @@ int OsSignal::Recover()
 {
     int ret = setjmp(env);
     if (ret) {
-        INFO("recover from signal, signum:{}\n", ret);
+        INFOLN("recover from signal, signum:{}\n", ret);
     }
     return ret;
 }
@@ -19,7 +19,7 @@ int OsSignal::Recover()
 void OsSignal::handle_signal(int signum)
 {
     string bt = GetBackTrace();
-    ERR("receive signal, signum:{} backtrace:{}\n", signum, bt);
+    ERRLN("receive signal, signum:{} backtrace:{}\n", signum, bt);
     longjmp(env, signum);
 }
 

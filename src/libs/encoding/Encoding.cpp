@@ -21,7 +21,7 @@ int Encoding::Convert(string from_code, string to_code, string src, string& dst)
 {
     iconv_t h_iconv = iconv_open(to_code.c_str(), from_code.c_str());
     if (nullptr == h_iconv) {
-        ERR("iconv do not support from {} to {}\n", from_code, to_code);
+        ERRLN("iconv do not support from {} to {}\n", from_code, to_code);
         return -1;
     }
     Defer d([h_iconv]() { iconv_close(h_iconv); });
@@ -40,7 +40,7 @@ int Encoding::Convert(string from_code, string to_code, string src, string& dst)
                 out_vec.resize(out_vec.size() * 2);
                 continue;
             } else {
-                ERR("{}:{}\n", ret, strerror(ret));
+                ERRLN("{}:{}\n", ret, strerror(ret));
                 return -1;
             }
         }
@@ -65,11 +65,11 @@ int Encoding::Utf8ToSystemEncoding(string src, string& dst)
         dst = boost::locale::conv::between(src, system_encoding, "UTF8");
         ret = 0;
     } catch (boost::exception& e) {
-        ERR("utf8 to system encoding error, exception: {}\n", boost::diagnostic_information(e));
+        ERRLN("utf8 to system encoding error, exception: {}\n", boost::diagnostic_information(e));
     } catch (const std::exception& e) {
-        ERR("utf8 to system encoding error, exception: {}\n", e.what());
+        ERRLN("utf8 to system encoding error, exception: {}\n", e.what());
     } catch (...) {
-        ERR("utf8 to system encoding error\n");
+        ERRLN("utf8 to system encoding error\n");
     }
     return ret;
 }

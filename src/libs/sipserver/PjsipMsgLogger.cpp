@@ -29,7 +29,7 @@ pj_bool_t PjsipMsgLogger::logging_on_rx_msg(pjsip_rx_data* rdata)
     char addr[PJ_INET6_ADDRSTRLEN + 10];
     pj_str_t input_str = pj_str(rdata->pkt_info.src_name);
 
-    INFO("RX {} bytes {} from {} {}:\n"
+    INFOLN("RX {} bytes {} from {} {}:\n"
          "{:.{}}\n"
          "--end msg--\n",
         rdata->msg_info.len, pjsip_rx_data_get_info(rdata), rdata->tp_info.transport->type_name, pj_addr_str_print(&input_str, rdata->pkt_info.src_port, addr, sizeof(addr), 1), rdata->msg_info.msg_buf, (int)rdata->msg_info.len);
@@ -53,7 +53,7 @@ pj_status_t PjsipMsgLogger::logging_on_tx_msg(pjsip_tx_data* tdata)
      *	transport layer. So don't try to access tp_info when the module
      *	has lower priority than transport layer.
      */
-    INFO("TX {} bytes {} to {} {}:\n"
+    INFOLN("TX {} bytes {} to {} {}:\n"
          "{:.{}}\n"
          "--end msg--\n",
         (tdata->buf.cur - tdata->buf.start), pjsip_tx_data_get_info(tdata), tdata->tp_info.transport->type_name, pj_addr_str_print(&input_str, tdata->tp_info.dst_port, addr, sizeof(addr), 1), tdata->buf.start, (int)(tdata->buf.cur - tdata->buf.start));

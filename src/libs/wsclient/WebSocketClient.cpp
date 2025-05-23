@@ -25,7 +25,7 @@ int WebSocketClient::connect(string url_s, WebSocketClientCb cb)
         auto session = make_shared<WsClientSslSession>(mIoContext, ctx, url.host, url.port, url.path, url.query, cb);
         session->start();
     } else {
-        ERR("invalid ws url, url:{}", url_s);
+        ERRLN("invalid ws url, url:{}", url_s);
     }
     return 0;
 }

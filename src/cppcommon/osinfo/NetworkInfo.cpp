@@ -42,7 +42,7 @@ string NetworkInfo::GetInterfaceMac()
 vector<std::shared_ptr<NetworkInfo::CardInfo>> NetworkInfo::GetAllCardInfo()
 {
     vector<std::shared_ptr<NetworkInfo::CardInfo>> vec;
-    PIP_ADAPTER_INFO pIpAdapterInfo = new IP_ADAPTER_INFO();
+    PIP_ADAPTER_INFOLN pIpAdapterInfo = new IP_ADAPTER_INFOLN();
     unsigned long stSize = sizeof(IP_ADAPTER_INFO);
     string ip;
     int nRel = GetAdaptersInfo(pIpAdapterInfo, &stSize);
@@ -127,14 +127,14 @@ static string getMac(string name)
     if (sock < 0) {
         int err = errno;
         char* msg = strerror(err);
-        ERR("socket error {}:{}\n", err, msg ? msg : "");
+        ERRLN("socket error {}:{}\n", err, msg ? msg : "");
         return "";
     }
     strcpy(ifreq.ifr_name, name.c_str());
     if (ioctl(sock, SIOCGIFHWADDR, &ifreq) < 0) {
         int err = errno;
         char* msg = strerror(err);
-        ERR("ioctl error {}:{}\n", err, msg ? msg : "");
+        ERRLN("ioctl error {}:{}\n", err, msg ? msg : "");
         return "";
     }
     snprintf(mac, sizeof(mac),"%02x:%02x:%02x:%02x:%02x:%02x",
@@ -177,14 +177,14 @@ vector<std::shared_ptr<NetworkInfo::CardInfo>> NetworkInfo::GetAllCardInfo()
             cardInfo->mask = addressBuffer;
             // mac
             cardInfo->mac = getMac(cardInfo->name);
-            INFO("{} IPv4 Address {} mask {} mac {}\n", cardInfo->name, cardInfo->ip, cardInfo->mask, cardInfo->mac);
+            INFOLN("{} IPv4 Address {} mask {} mac {}\n", cardInfo->name, cardInfo->ip, cardInfo->mask, cardInfo->mac);
             vec.emplace_back(cardInfo);
         } else if (ifa->ifa_addr->sa_family == AF_INET6) { // check it is IP6
             // is a valid IP6 Address
             addr = &((struct sockaddr_in*)ifa->ifa_addr)->sin_addr;
             char addressBuffer[INET6_ADDRSTRLEN];
             inet_ntop(AF_INET6, addr, addressBuffer, INET6_ADDRSTRLEN);
-            INFO("{} IPv6 Address {}\n", ifa->ifa_name, addressBuffer);
+            INFOLN("{} IPv6 Address {}\n", ifa->ifa_name, addressBuffer);
         }
         ifa = ifa->ifa_next;
     }

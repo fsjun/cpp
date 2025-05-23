@@ -55,26 +55,26 @@ void handle_request(http::request<http::string_body>&& req, Send&& send, string 
     string method = req.method_string();
     string target = req.target();
     auto& body = req.body();
-    INFO("receive req from {}, method:{} target:{} body:{}\n", address, method, target, body);
+    INFOLN("receive req from {}, method:{} target:{} body:{}\n", address, method, target, body);
     server->handleRequest(req, resp);
     if (resp.type() == typeid(http::response<http::empty_body>)) {
         auto res = any_cast<http::response<http::empty_body>>(resp);
         int code = res.result_int();
         string reason = res.reason();
-        INFO("send response to {}, code:{} reason:{}\n", address, code, reason);
+        INFOLN("send response to {}, code:{} reason:{}\n", address, code, reason);
         send(std::move(res));
     } else if (resp.type() == typeid(http::response<http::string_body>)) {
         auto res = any_cast<http::response<http::string_body>>(resp);
         int code = res.result_int();
         string reason = res.reason();
         string& body = res.body();
-        INFO("send response to {}, code:{} reason:{} body:{}\n", address, code, reason, body);
+        INFOLN("send response to {}, code:{} reason:{} body:{}\n", address, code, reason, body);
         send(std::move(res));
     } else if (resp.type() == typeid(http::response<http::file_body>*)) {
         auto res = any_cast<http::response<http::file_body>*>(resp);
         int code = res->result_int();
         string reason = res->reason();
-        INFO("send response to {}, code:{} reason:{} file:...\n", address, code, reason);
+        INFOLN("send response to {}, code:{} reason:{} file:...\n", address, code, reason);
         send(std::move(*res));
         delete res;
     } else {
@@ -82,7 +82,7 @@ void handle_request(http::request<http::string_body>&& req, Send&& send, string 
         res.keep_alive(req.keep_alive());
         int code = res.result_int();
         string reason = res.reason();
-        INFO("send response to {}, code:{} reason:{}\n", address, code, reason);
+        INFOLN("send response to {}, code:{} reason:{}\n", address, code, reason);
         send(std::move(res));
     }
 }

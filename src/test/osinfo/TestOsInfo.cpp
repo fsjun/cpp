@@ -12,27 +12,27 @@ protected:
     void SetUp()
     {
         INITLOG();
-        INFO("SetUp\n");
+        INFOLN("SetUp\n");
     }
 
     // Code here will be called immediately after each test (right before the destructor)
     void TearDown()
     {
-        INFO("TearDown\n");
+        INFOLN("TearDown\n");
     }
 };
 
 TEST_F(OsInfoTest, cpuCount)
 {
     int num = CpuInfo::GetCpuCount();
-    INFO("cpu num: {}\n", num);
+    INFOLN("cpu num: {}\n", num);
     EXPECT_TRUE(true);
 }
 
 TEST_F(OsInfoTest, threadId)
 {
     int tid = ThreadInfo::GetTid();
-    INFO("thread id: {}\n", tid);
+    INFOLN("thread id: {}\n", tid);
     EXPECT_TRUE(true);
 }
 
@@ -42,6 +42,6 @@ TEST_F(OsInfoTest, process)
     int ppid = ProcessInfo::GetParentPid();
     int gid = ProcessInfo::GetGid();
     int sid = ProcessInfo::GetSid();
-    INFO("process id: {}, parent process id: {}, gid: {}, sid: {}\n", pid, ppid, gid, sid);
+    INFOLN("process id: {}, parent process id: {}, gid: {}, sid: {}\n", pid, ppid, gid, sid);
     EXPECT_TRUE(true);
 }

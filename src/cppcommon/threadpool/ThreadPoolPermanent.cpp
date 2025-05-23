@@ -40,7 +40,7 @@ int ThreadPoolPermanent::startThread(string stateId)
     int size = mWorkerThreads.size() + mIdleThreads.size();
     if (mMaxSize > 0 && size >= mMaxSize) {
         mOwner = 0;
-        ERR("permanent thread pool exceed max, current:{} max {}\n", size, mMaxSize);
+        ERRLN("permanent thread pool exceed max, current:{} max {}\n", size, mMaxSize);
         return -1;
     }
     auto thread = ThreadPoolBase::startThread();
@@ -61,7 +61,7 @@ void ThreadPoolPermanent::stopThread(string stateId)
     auto it = std::ranges::find_if(mWorkerThreads, [stateId](auto val){ return val->getId() == stateId; });
     if (it == mWorkerThreads.end()) {
         mOwner = 0;
-        WARN("permanent thread is not exist when stop thread, stateId:{}\n", stateId.c_str());
+        WARNLN("permanent thread is not exist when stop thread, stateId:{}\n", stateId.c_str());
         return;
     }
     auto thread = *it;

@@ -8,16 +8,16 @@
 #define EOL "\n"
 
 #define FATAL(format, ...) SPDLOG_LOGGER_CRITICAL(spdlog::get("log"), format, ##__VA_ARGS__)
-#define ERR(format, ...) SPDLOG_LOGGER_ERROR(spdlog::get("log"), format, ##__VA_ARGS__)
-#define WARN(format, ...) SPDLOG_LOGGER_WARN(spdlog::get("log"), format, ##__VA_ARGS__)
-#define INFO(format, ...) SPDLOG_LOGGER_INFO(spdlog::get("log"), format, ##__VA_ARGS__)
-#define DEBUG(format, ...) SPDLOG_LOGGER_DEBUG(spdlog::get("log"), format, ##__VA_ARGS__)
+#define ERRLN(format, ...) SPDLOG_LOGGER_ERRLNOR(spdlog::get("log"), format, ##__VA_ARGS__)
+#define WARNLN(format, ...) SPDLOG_LOGGER_WARNLN(spdlog::get("log"), format, ##__VA_ARGS__)
+#define INFOLN(format, ...) SPDLOG_LOGGER_INFOLN(spdlog::get("log"), format, ##__VA_ARGS__)
+#define DEBUGLN(format, ...) SPDLOG_LOGGER_DEBUGLN(spdlog::get("log"), format, ##__VA_ARGS__)
 
 #define FATALLN(format, ...) SPDLOG_LOGGER_CRITICAL(spdlog::get("log"), format EOL, ##__VA_ARGS__)
 #define ERRLN(format, ...) SPDLOG_LOGGER_ERROR(spdlog::get("log"), format EOL, ##__VA_ARGS__)
-#define WARNLN(format, ...) SPDLOG_LOGGER_WARN(spdlog::get("log"), format EOL, ##__VA_ARGS__)
-#define INFOLN(format, ...) SPDLOG_LOGGER_INFO(spdlog::get("log"), format EOL, ##__VA_ARGS__)
-#define DEBUGLN(format, ...) SPDLOG_LOGGER_DEBUG(spdlog::get("log"), format EOL, ##__VA_ARGS__)
+#define WARNLNLN(format, ...) SPDLOG_LOGGER_WARNLN(spdlog::get("log"), format EOL, ##__VA_ARGS__)
+#define INFOLNLN(format, ...) SPDLOG_LOGGER_INFOLN(spdlog::get("log"), format EOL, ##__VA_ARGS__)
+#define DEBUGLNLN(format, ...) SPDLOG_LOGGER_DEBUGLN(spdlog::get("log"), format EOL, ##__VA_ARGS__)
 
 // INITLOG(level, file, size, count, console)
 #define INITLOG(...) init_log(__VA_ARGS__)

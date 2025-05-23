@@ -14,13 +14,13 @@ protected:
     void SetUp()
     {
         Log::Init(LOG_LEVEL_INFO);
-        INFO("SetUp\n");
+        INFOLN("SetUp\n");
     }
 
     // Code here will be called immediately after each test (right before the destructor)
     void TearDown()
     {
-        INFO("TearDown\n");
+        INFOLN("TearDown\n");
     }
 };
 

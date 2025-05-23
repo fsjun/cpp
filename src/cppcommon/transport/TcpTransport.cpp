@@ -34,7 +34,7 @@ int TcpTransport::init(TransportTcpType type, string local_host, int local_port,
             mSock->bind(local_ep, ec);
             if (ec) {
                 string err_msg = ec.message();
-                ERR("bind {}:{} error: {}\n", local_host, local_port, err_msg);
+                ERRLN("bind {}:{} error: {}\n", local_host, local_port, err_msg);
                 return -1;
             }
             auto le = mSock->local_endpoint();
@@ -48,20 +48,20 @@ int TcpTransport::init(TransportTcpType type, string local_host, int local_port,
         mAcceptor->open(boost::asio::ip::tcp::v4(), ec);
         if (ec) {
             string err_msg = ec.message();
-            ERR("open {}:{} error: {}\n", local_host, local_port, err_msg);
+            ERRLN("open {}:{} error: {}\n", local_host, local_port, err_msg);
             return -1;
         }
         mAcceptor->set_option(boost::asio::socket_base::reuse_address(true), ec);
         if (ec) {
             string err_msg = ec.message();
-            ERR("set_option {}:{} error: {}\n", local_host, local_port, err_msg);
+            ERRLN("set_option {}:{} error: {}\n", local_host, local_port, err_msg);
             return -1;
         }
         boost::asio::ip::tcp::endpoint local_ep(boost::asio::ip::address::from_string(local_host), local_port);
         mAcceptor->bind(local_ep, ec);
         if (ec) {
             string err_msg = ec.message();
-            ERR("bind {}:{} error: {}\n", local_host, local_port, err_msg);
+            ERRLN("bind {}:{} error: {}\n", local_host, local_port, err_msg);
             return -1;
         }
         auto le = mAcceptor->local_endpoint();
@@ -70,7 +70,7 @@ int TcpTransport::init(TransportTcpType type, string local_host, int local_port,
         mAcceptor->listen(boost::asio::socket_base::max_listen_connections, ec);
         if (ec) {
             string err_msg = ec.message();
-            ERR("listen {}:{} error: {}\n", local_host, local_port, err_msg);
+            ERRLN("listen {}:{} error: {}\n", local_host, local_port, err_msg);
             return -1;
         }
         do_accept();
@@ -106,7 +106,7 @@ void TcpTransport::do_connect(string host, int port)
 void TcpTransport::on_connect(boost::system::error_code ec)
 {
     if (ec) {
-        ERR("on_connect error: {}\n", ec.message());
+        ERRLN("on_connect error: {}\n", ec.message());
         return;
     }
     if (mCb) {
@@ -131,7 +131,7 @@ void TcpTransport::do_accept()
 void TcpTransport::on_accept(shared_ptr<boost::asio::ip::tcp::socket> new_sock, boost::system::error_code ec)
 {
     if (ec) {
-        ERR("on_accept error: {}\n", ec.message());
+        ERRLN("on_accept error: {}\n", ec.message());
         return;
     }
     auto tcpTransport = std::make_shared<TcpTransport>(mIoc);

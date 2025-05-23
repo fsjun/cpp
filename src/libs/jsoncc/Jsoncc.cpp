@@ -7,7 +7,7 @@ std::shared_ptr<Json::Value> Jsoncc::StringToJson(string jsonstr)
     Json::Reader reader;
     auto ret = reader.parse(jsonstr, *root);
     if (!ret) {
-        ERR("json parse error, ret[{}] jsonstr[{}]\n", ret, jsonstr);
+        ERRLN("json parse error, ret[{}] jsonstr[{}]\n", ret, jsonstr);
         return nullptr;
     }
     return root;

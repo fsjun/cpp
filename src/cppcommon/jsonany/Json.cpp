@@ -54,7 +54,7 @@ string Json::toString(any& json)
     } else if (json.type() == typeid(char const*)) {
         is << any_cast<char const*>(json);
     } else {
-        ERR("unsupported json type[{}]\n", json.type().name());
+        ERRLN("unsupported json type[{}]\n", json.type().name());
         return "";
     }
     jsonstr = is.str();
@@ -113,7 +113,7 @@ int Json::jsonToString(any& json, string& jsonstr)
         }
         is << str;
     } else {
-        ERR("unsupported json type[{}]\n", json.type().name());
+        ERRLN("unsupported json type[{}]\n", json.type().name());
         return -1;
     }
     jsonstr = is.str();
@@ -203,7 +203,7 @@ int Json::stringToJson(string& jsonstr, any& json, int& index)
             while (1) {
                 i = jsonstr.find(c, i);
                 if (i < 0) {
-                    ERR("json format is error at[{}]: {} is not match", index, c);
+                    ERRLN("json format is error at[{}]: {} is not match", index, c);
                     return -1;
                 }
                 if (jsonstr[i - 1] != '\\') {
@@ -215,7 +215,7 @@ int Json::stringToJson(string& jsonstr, any& json, int& index)
             json = val;
             i = jsonstr.find_first_of(":,]}", i);
             if (i == string::npos) {
-                ERR("json format is error at[{}]: :,]} is not found", i);
+                ERRLN("json format is error at[{}]: :,]} is not found", i);
                 return -1;
             }
             index = i;
@@ -223,7 +223,7 @@ int Json::stringToJson(string& jsonstr, any& json, int& index)
         } else {
             int i = jsonstr.find_first_of(":,]}", index);
             if (i == string::npos) {
-                ERR("json format is error at[{}]: :,]} is not found", index);
+                ERRLN("json format is error at[{}]: :,]} is not found", index);
                 return -1;
             }
             string value = jsonstr.substr(index, i - index);
@@ -272,12 +272,12 @@ int Json::stringToJson(string& jsonstr, map<string, any>& json, int& index)
         }
         string key;
         if (value.type() != typeid(string)) {
-            ERR("unsupported key type[{}] at[{}]", value.type().name(), index);
+            ERRLN("unsupported key type[{}] at[{}]", value.type().name(), index);
             return -1;
         }
         key = any_cast<string>(value);
         if (jsonstr[index] != ':') {
-            ERR("json format error at[{}]: it should be :", index);
+            ERRLN("json format error at[{}]: it should be :", index);
             return -1;
         }
         index++;

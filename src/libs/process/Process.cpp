@@ -15,7 +15,7 @@ int Process::System(string cmd, string& result)
         (bp::std_out & bp::std_err) > in_buf,
         bp::std_in < bp::null);
     if (ret < 0) {
-        ERR("cmd:{} ret:{} {}:{}\n", cmd, ret, ec.value(), ec.message());
+        ERRLN("cmd:{} ret:{} {}:{}\n", cmd, ret, ec.value(), ec.message());
         return ret;
     }
     auto vec = in_buf.get();
@@ -33,7 +33,7 @@ int Process::SystemGb18030(string cmd, string& result)
     int ret = 0;
     ret = Encoding::Utf8ToGb18030(cmd, dst);
     if (ret < 0) {
-        ERR("convert error from utf8 to gb18030, cmd:{}\n", cmd);
+        ERRLN("convert error from utf8 to gb18030, cmd:{}\n", cmd);
         return -1;
     }
     ret = bp::system(
@@ -42,7 +42,7 @@ int Process::SystemGb18030(string cmd, string& result)
         (bp::std_out & bp::std_err) > in_buf,
         bp::std_in < bp::null);
     if (ret < 0) {
-        ERR("cmd:{} ret:{} {}:{}\n", cmd, ret, ec.value(), ec.message());
+        ERRLN("cmd:{} ret:{} {}:{}\n", cmd, ret, ec.value(), ec.message());
         return ret;
     }
     auto vec = in_buf.get();
