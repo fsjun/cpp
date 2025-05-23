@@ -5,11 +5,11 @@
 #include <iostream>
 #include <any>
 
-class Json
+class Jsonany
 {
 public:
-    Json();
-    virtual ~Json();
+    Jsonany();
+    virtual ~Jsonany();
     std::string toString(std::any &json);
     int jsonToString(std::any &json, std::string &jsonstr);
     int jsonToString(std::map<std::string, std::any> &json, std::string &jsonstr);
