@@ -5,7 +5,7 @@
 // Report a failure
 static void fail(boost::system::error_code ec, char const* what)
 {
-    ERRLN("{}:{}\n", what, ec.message());
+    ERRLN("{}:{}", what, ec.message());
 }
 
 SslSession::SslSession(shared_ptr<boost::asio::io_context> ioc, shared_ptr<tcp::socket> socket, ssl::context& ctx, shared_ptr<HttpServer>& server)

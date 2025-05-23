@@ -18,7 +18,7 @@ int UdpTransport::init(string host, int port)
     mSock->open(ep.protocol());
     mSock->bind(ep, ec);
     if (ec) {
-        ERRLN("bind error address({}:{}): {}\n", host, port, ec.message());
+        ERRLN("bind error address({}:{}): {}", host, port, ec.message());
         return -1;
     }
     auto local_ep = mSock->local_endpoint();

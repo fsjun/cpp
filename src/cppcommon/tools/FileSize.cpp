@@ -7,7 +7,7 @@ int FileSize::GetDiskSize(string path, uintmax_t& capacity, uintmax_t& free_size
     std::error_code ec;
     std::filesystem::space_info sp = std::filesystem::space(path, ec);
     if (ec) {
-        ERRLN("get space info error, %d:{}\n", ec.value(), ec.message());
+        ERRLN("get space info error, %d:{}", ec.value(), ec.message());
         return -1;
     }
     capacity = sp.capacity;

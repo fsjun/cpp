@@ -30,7 +30,7 @@ void WsServerSslSession::on_run()
 void WsServerSslSession::on_handshake(beast::error_code ec)
 {
     if (ec) {
-        ERRLN("wss handshake error, remote {}:{} msg:{}\n", mRemoteIp, mRemotePort, ec.message());
+        ERRLN("wss handshake error, remote {}:{} msg:{}", mRemoteIp, mRemotePort, ec.message());
         return;
     }
     // Turn off the timeout on the tcp_stream, because
@@ -49,7 +49,7 @@ void WsServerSslSession::on_handshake(beast::error_code ec)
 void WsServerSslSession::on_accept(beast::error_code ec)
 {
     if (ec) {
-        ERRLN("wss accept error, remote {}:{} msg:{}\n", mRemoteIp, mRemotePort, ec.message());
+        ERRLN("wss accept error, remote {}:{} msg:{}", mRemoteIp, mRemotePort, ec.message());
         return;
     }
     mCb(shared_from_this(), WS_SERVER_CONNECT, nullptr, 0);
@@ -70,12 +70,12 @@ void WsServerSslSession::on_read(beast::error_code ec, std::size_t bytes_transfe
     boost::ignore_unused(bytes_transferred);
     // This indicates that the session was closed
     if (ec == websocket::error::closed) {
-        INFOLN("wss close by peer, remote {}:{}\n", mRemoteIp, mRemotePort);
+        INFOLN("wss close by peer, remote {}:{}", mRemoteIp, mRemotePort);
         mCb(shared_from_this(), WS_SERVER_CLOSE, nullptr, 0);
         return;
     }
     if (ec) {
-        ERRLN("wss read error, remote {}:{} msg:{}\n", mRemoteIp, mRemotePort, ec.message());
+        ERRLN("wss read error, remote {}:{} msg:{}", mRemoteIp, mRemotePort, ec.message());
         mCb(shared_from_this(), WS_SERVER_ERROR, nullptr, 0);
         return;
     }
@@ -84,9 +84,9 @@ void WsServerSslSession::on_read(beast::error_code ec, std::size_t bytes_transfe
     bool isBinary = mStream.got_binary();
     if (isBinary) {
         type = WS_SERVER_BINARY;
-        DEBUGLN("wss receive message, remote {}:{}\n", mRemoteIp, mRemotePort);
+        DEBUGLN("wss receive message, remote {}:{}", mRemoteIp, mRemotePort);
     } else {
-        INFOLN("wss receive message, remote {}:{} message:{:.{}}\n", mRemoteIp, mRemotePort, (char*)data.data(), data.size());
+        INFOLN("wss receive message, remote {}:{} message:{:.{}}", mRemoteIp, mRemotePort, (char*)data.data(), data.size());
     }
     mCb(shared_from_this(), type, (char*)data.data(), data.size());
     do_read();
@@ -94,7 +94,7 @@ void WsServerSslSession::on_read(beast::error_code ec, std::size_t bytes_transfe
 
 int WsServerSslSession::do_write(string message, bool async)
 {
-    INFOLN("wss send message, remote {}:{} message:{}\n", mRemoteIp, mRemotePort, message);
+    INFOLN("wss send message, remote {}:{} message:{}", mRemoteIp, mRemotePort, message);
     std::unique_lock<std::mutex> l(mMutex);
     if (async) {
         shared_ptr<std::vector<char>> vec = make_shared<std::vector<char>>(message.begin(), message.end());
@@ -119,7 +119,7 @@ int WsServerSslSession::do_write(string message, bool async)
         beast::error_code ec;
         mStream.write(net::buffer(message), ec);
         if (ec) {
-            ERRLN("error ws write, remote {}:{} msg:{}\n", mRemoteIp, mRemotePort, ec.message());
+            ERRLN("error ws write, remote {}:{} msg:{}", mRemoteIp, mRemotePort, ec.message());
             return -1;
         }
     }
@@ -128,7 +128,7 @@ int WsServerSslSession::do_write(string message, bool async)
 
 int WsServerSslSession::do_write(char* data, int len, bool async)
 {
-    DEBUGLN("wss send message, remote {}:{}\n", mRemoteIp, mRemotePort);
+    DEBUGLN("wss send message, remote {}:{}", mRemoteIp, mRemotePort);
     std::unique_lock<std::mutex> l(mMutex);
     if (async) {
         shared_ptr<std::vector<char>> vec = make_shared<std::vector<char>>(data, data + len);
@@ -153,7 +153,7 @@ int WsServerSslSession::do_write(char* data, int len, bool async)
         beast::error_code ec;
         mStream.write(net::buffer(data, len), ec);
         if (ec) {
-            ERRLN("error ws write, remote {}:{} msg:{}\n", mRemoteIp, mRemotePort, ec.message());
+            ERRLN("error ws write, remote {}:{} msg:{}", mRemoteIp, mRemotePort, ec.message());
             return -1;
         }
     }
@@ -167,7 +167,7 @@ void WsServerSslSession::on_write(shared_ptr<std::vector<char>> vec, beast::erro
     mCv.notify_one();
     boost::ignore_unused(bytes_transferred);
     if (ec) {
-        ERRLN("wss write error, remote {}:{} msg:{}\n", mRemoteIp, mRemotePort, ec.message());
+        ERRLN("wss write error, remote {}:{} msg:{}", mRemoteIp, mRemotePort, ec.message());
         return;
     }
     if (mQueue.empty()) {

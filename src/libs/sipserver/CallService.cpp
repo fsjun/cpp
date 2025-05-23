@@ -427,7 +427,7 @@ pj_status_t CallService::on_incoming_call(pjsip_rx_data* rdata, pjsip_module* mo
 
     ret = addCall(callId, sipCall);
     if (ret < 0) {
-        ERRLN("call in max exceed, current:{} max:{} callId:{}\n", mCurrCallCnt, mMaxCall, callId);
+        ERRLN("call in max exceed, current:{} max:{} callId:{}", mCurrCallCnt, mMaxCall, callId);
         pjsip_dlg_respond(dlg, rdata, 503, nullptr, nullptr, nullptr);
         pjsip_inv_terminate(inv, 503, PJ_FALSE);
         sipCall->inv = nullptr;
@@ -448,7 +448,7 @@ pj_status_t CallService::on_incoming_call(pjsip_rx_data* rdata, pjsip_module* mo
         dlg->mod_data[endpoint->mAppModule.id] = sipCall->callId;
         inv->mod_data[endpoint->mAppModule.id] = sipCall->callId;
     }
-    INFOLN("incoming call, callId:{}\n", callId);
+    INFOLN("incoming call, callId:{}", callId);
     {
         sipCall->sourceIp = rdata->pkt_info.src_name;
         sipCall->sourcePort = rdata->pkt_info.src_port;
@@ -494,17 +494,17 @@ void CallService::on_rx_offer2(pjsip_inv_session* inv, struct pjsip_inv_on_rx_of
     pjsip_dialog* dlg = pjsip_rdata_get_dlg(rdata);
 
     if (!dlg) {
-        ERRLN("Unable to get dialog on rx offer\n");
+        ERRLN("Unable to get dialog on rx offer");
         return;
     }
     string callId = string(dlg->call_id->id.ptr, dlg->call_id->id.slen);
     auto call = getCall(callId);
     if (!call) {
-        ERRLN("Unable to get call on rx offer, callId:{}\n", callId);
+        ERRLN("Unable to get call on rx offer, callId:{}", callId);
         return;
     }
     if (!param->rdata || !param->rdata->msg_info.msg || !param->rdata->msg_info.msg->body) {
-        ERRLN("param has no sdp body on rx offer, callId:{}\n", callId);
+        ERRLN("param has no sdp body on rx offer, callId:{}", callId);
         return;
     }
     pjsip_msg_body* body = param->rdata->msg_info.msg->body;
@@ -518,12 +518,12 @@ void CallService::on_rx_offer2(pjsip_inv_session* inv, struct pjsip_inv_on_rx_of
         local_sdp_str = call->localSdp;
     }
     if (local_sdp_str.empty()) {
-        ERRLN("local sdp is empty on rx offer, callId:{}\n", callId);
+        ERRLN("local sdp is empty on rx offer, callId:{}", callId);
         return;
     }
     pjmedia_sdp_parse(call->pool, (char*)local_sdp_str.c_str(), local_sdp_str.size(), &call->sdp_session);
     if (!call->sdp_session) {
-        ERRLN("local sdp parse media session error on rx offer, callId:{}\n", callId);
+        ERRLN("local sdp parse media session error on rx offer, callId:{}", callId);
         return;
     }
     status = pjsip_inv_set_local_sdp(call->inv, call->sdp_session);
@@ -544,7 +544,7 @@ void CallService::on_state_changed(pjsip_inv_session* inv, pjsip_event* e)
     if (callId.empty()) {
         char* modCallId = (char*)inv->dlg->mod_data[endpoint->mAppModule.id];
         if (nullptr == modCallId || strlen(modCallId) == 0) {
-            ERRLN("callId of mod_data is nullptr, state:{}\n", stateName);
+            ERRLN("callId of mod_data is nullptr, state:{}", stateName);
             return;
         }
         callId = modCallId;
@@ -552,11 +552,11 @@ void CallService::on_state_changed(pjsip_inv_session* inv, pjsip_event* e)
     auto call = getCall(callId);
     if (!call) {
         if (PJSIP_INV_STATE_INCOMING != inv->state) {
-            ERRLN("call not found callId:{} state:{}\n", callId, stateName);
+            ERRLN("call not found callId:{} state:{}", callId, stateName);
         }
         return;
     }
-    INFOLN("call state changed callId:{} state:{}\n", call->callId, stateName);
+    INFOLN("call state changed callId:{} state:{}", call->callId, stateName);
     auto callListener = getCallListener();
     switch (inv->state) {
     case PJSIP_INV_STATE_EARLY:
@@ -615,7 +615,7 @@ void CallService::on_state_changed(pjsip_inv_session* inv, pjsip_event* e)
         }
         call->code = code;
         call->reason = reason;
-        INFOLN("call hangup, callId:{} code:{} reason:{}\n", call->callId, code, reason);
+        INFOLN("call hangup, callId:{} code:{} reason:{}", call->callId, code, reason);
         if (callListener) {
             callListener->onDisconnected(call);
         }
@@ -635,11 +635,11 @@ void CallService::on_message(pjsip_rx_data* rdata)
     string callId = string(rdata->msg_info.cid->id.ptr, rdata->msg_info.cid->id.slen);
     string body = string((char*)rdata->msg_info.msg->body->data, rdata->msg_info.msg->body->len);
     pjsip_transaction* transaction = pjsip_rdata_get_tsx(rdata);
-    INFOLN("receive message, callId:{} body:{}\n", callId, body);
+    INFOLN("receive message, callId:{} body:{}", callId, body);
     pjsip_tsx_recv_msg(transaction, rdata);
     auto call = getCall(callId);
     if (!call) {
-        ERRLN("call is not found, callId:{}\n", callId);
+        ERRLN("call is not found, callId:{}", callId);
         pjsip_dlg_respond(call->dlg, rdata, 404, nullptr, nullptr, nullptr);
         return;
     }
@@ -659,11 +659,11 @@ void CallService::on_info(pjsip_rx_data* rdata)
     string callId = string(rdata->msg_info.cid->id.ptr, rdata->msg_info.cid->id.slen);
     string body = string((char*)rdata->msg_info.msg->body->data, rdata->msg_info.msg->body->len);
     pjsip_transaction* transaction = pjsip_rdata_get_tsx(rdata);
-    INFOLN("receive message, callId:{} body:{}\n", callId, body);
+    INFOLN("receive message, callId:{} body:{}", callId, body);
     pjsip_tsx_recv_msg(transaction, rdata);
     auto call = getCall(callId);
     if (!call) {
-        ERRLN("call is not found, callId:{}\n", callId);
+        ERRLN("call is not found, callId:{}", callId);
         pjsip_dlg_respond(call->dlg, rdata, 404, nullptr, nullptr, nullptr);
         return;
     }
@@ -696,12 +696,12 @@ int CallService::makeCall(shared_ptr<SipCall> call, string callId, string from, 
     call->localSdp = local_sdp;
     ret = create_contact_by_config(from, contactIp, contact);
     if (ret < 0) {
-        ERRLN("error create_uac_contact user:{}\n", from);
+        ERRLN("error create_uac_contact user:{}", from);
         return -1;
     }
     ret = addCall(callId, call);
     if (ret < 0) {
-        ERRLN("call out max exceed, current:{} max:{}\n", mCurrCallCnt, mMaxCall);
+        ERRLN("call out max exceed, current:{} max:{}", mCurrCallCnt, mMaxCall);
         return -1;
     }
     string local_uri = boost::str(boost::format("sip:%s@%s") % from % host);
@@ -743,7 +743,7 @@ int CallService::makeCall(shared_ptr<SipCall> call, string callId, string from, 
     status = pjmedia_sdp_parse(call->pool, (char*)local_sdp.c_str(), local_sdp.size(), &sdp_session);
     if (status != PJ_SUCCESS) {
         mEndpoint->PjsipPerror(__FILE__, __LINE__, "sdp parse error", status);
-        ERRLN("invalid sdp:\n{}", local_sdp);
+        ERRLN("invalid sdp:{}", local_sdp);
         goto on_error;
     }
     // options |= PJSIP_INV_SUPPORT_100REL;
@@ -820,7 +820,7 @@ void CallService::timerCb(string callId)
         return;
     }
     call->timer.id = 0;
-    INFOLN("hangup call when call timeout, timeout:{}s callId:{}\n", call->timeout, call->callId);
+    INFOLN("hangup call when call timeout, timeout:{}s callId:{}", call->timeout, call->callId);
     hangup(call, 408, "");
 }
 
@@ -954,7 +954,7 @@ int CallService::reinvite(shared_ptr<SipCall> call, string local_sdp)
 
     ret = create_contact_by_config(call->fromUser, call->contactIp, contact);
     if (ret < 0) {
-        ERRLN("error create_uac_contact user:{} callId:{}\n", call->fromUser, call->callId);
+        ERRLN("error create_uac_contact user:{} callId:{}", call->fromUser, call->callId);
         return -1;
     }
     pjsip_tx_data* tdata = nullptr;
@@ -962,7 +962,7 @@ int CallService::reinvite(shared_ptr<SipCall> call, string local_sdp)
 
     status = pjmedia_sdp_parse(call->pool, (char*)local_sdp.c_str(), local_sdp.size(), &new_offer);
     if (PJ_SUCCESS != status) {
-        ERRLN("parse sdp error when reinvite, sdp:{} callId:{}\n", local_sdp, call->callId);
+        ERRLN("parse sdp error when reinvite, sdp:{} callId:{}", local_sdp, call->callId);
         return -1;
     }
 
@@ -1000,7 +1000,7 @@ int CallService::update(shared_ptr<SipCall> call, string local_sdp)
 
     ret = create_contact_by_config(call->fromUser, call->contactIp, contact);
     if (ret < 0) {
-        ERRLN("error create_uac_contact user:{} callId:{}\n", call->fromUser, call->callId);
+        ERRLN("error create_uac_contact user:{} callId:{}", call->fromUser, call->callId);
         return -1;
     }
     pjsip_tx_data* tdata = nullptr;

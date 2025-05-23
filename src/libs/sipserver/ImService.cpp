@@ -202,7 +202,7 @@ void ImService::imCallback(void* token, pjsip_event* e)
                 body = string((char*)rdata->msg_info.msg->body->data, rdata->msg_info.msg->body->len);
             }
         }
-        INFOLN("receive response callId:{} code:{} reason:{} body:{}\n", callId, code, reason, body);
+        INFOLN("receive response callId:{} code:{} reason:{} body:{}", callId, code, reason, body);
         auto imListener = getImListener();
         if (imListener) {
             imListener->on_rx_response(callId, code, reason, body);
@@ -226,7 +226,7 @@ int ImService::on_message(pjsip_rx_data* rdata)
     string method(rdata->msg_info.msg->line.req.method.name.ptr, rdata->msg_info.msg->line.req.method.name.slen);
     string callId = string(rdata->msg_info.cid->id.ptr, rdata->msg_info.cid->id.slen);
     string body = string((char*)rdata->msg_info.msg->body->data, rdata->msg_info.msg->body->len);
-    INFOLN("receive request callId:{} method:{} body:{}\n", callId, method, body);
+    INFOLN("receive request callId:{} method:{} body:{}", callId, method, body);
     auto imListener = getImListener();
     if (imListener) {
         imListener->on_rx_request(callId, method, body);
@@ -250,7 +250,7 @@ int ImService::on_info(pjsip_rx_data* rdata)
     string method(rdata->msg_info.msg->line.req.method.name.ptr, rdata->msg_info.msg->line.req.method.name.slen);
     string callId = string(rdata->msg_info.cid->id.ptr, rdata->msg_info.cid->id.slen);
     string body = string((char*)rdata->msg_info.msg->body->data, rdata->msg_info.msg->body->len);
-    INFOLN("receive request callId:{} method:{} body:{}\n", callId, method, body);
+    INFOLN("receive request callId:{} method:{} body:{}", callId, method, body);
     auto imListener = getImListener();
     if (imListener) {
         imListener->on_rx_request(callId, method, body);

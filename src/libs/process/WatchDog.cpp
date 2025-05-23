@@ -5,7 +5,7 @@ namespace bp = boost::process;
 
 void WatchDog::addProgram(string path)
 {
-    INFOLN("start program, path:{}\n", path);
+    INFOLN("start program, path:{}", path);
     std::error_code ec;
     bp::child c(
         path,
@@ -15,7 +15,7 @@ void WatchDog::addProgram(string path)
         bp::std_err > bp::null,
         bp::std_in < bp::null,
         bp::on_exit([path, this](int exit, const std::error_code& ec_in) {
-            ERRLN("{} exit, exit:{} ec:{}\n", path, exit, ec_in.value());
+            ERRLN("{} exit, exit:{} ec:{}", path, exit, ec_in.value());
             std::this_thread::sleep_for(std::chrono::seconds(mIntervalSecond));
             addProgram(path);
         }));

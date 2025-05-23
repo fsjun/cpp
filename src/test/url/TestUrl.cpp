@@ -10,13 +10,13 @@ protected:
     void SetUp()
     {
         Log::Init(LOG_LEVEL_INFO);
-        INFOLN("SetUp\n");
+        INFOLN("SetUp");
     }
 
     // Code here will be called immediately after each test (right before the destructor)
     void TearDown()
     {
-        INFOLN("TearDown\n");
+        INFOLN("TearDown");
     }
 };
 
@@ -25,7 +25,7 @@ TEST_F(UrlTest, http)
     string url_s = "http://www.baidu.com/path?a=b";
     Url url;
     url.parse(url_s);
-    INFOLN("protocol:{}, host:{}, port:{}, path:{}, query:{}\n", url.protocol, url.host, url.port, url.path, url.query);
+    INFOLN("protocol:{}, host:{}, port:{}, path:{}, query:{}", url.protocol, url.host, url.port, url.path, url.query);
     EXPECT_EQ("http", url.protocol);
     EXPECT_EQ("www.baidu.com", url.host);
     EXPECT_EQ(80, url.port);
@@ -38,7 +38,7 @@ TEST_F(UrlTest, http_port)
     string url_s = "http://www.baidu.com:8080/path?a=b";
     Url url;
     url.parse(url_s);
-    INFOLN("protocol:{}, host:{}, port:{}, path:{}, query:{}\n", url.protocol, url.host, url.port, url.path, url.query);
+    INFOLN("protocol:{}, host:{}, port:{}, path:{}, query:{}", url.protocol, url.host, url.port, url.path, url.query);
     EXPECT_EQ("http", url.protocol);
     EXPECT_EQ("www.baidu.com", url.host);
     EXPECT_EQ(8080, url.port);
@@ -51,7 +51,7 @@ TEST_F(UrlTest, http_less)
     string url_s = "http://www.baidu.com:8080";
     Url url;
     url.parse(url_s);
-    INFOLN("protocol:{}, host:{}, port:{}, path:{}, query:{}\n", url.protocol, url.host, url.port, url.path, url.query);
+    INFOLN("protocol:{}, host:{}, port:{}, path:{}, query:{}", url.protocol, url.host, url.port, url.path, url.query);
     EXPECT_EQ("http", url.protocol);
     EXPECT_EQ("www.baidu.com", url.host);
     EXPECT_EQ(8080, url.port);
@@ -64,7 +64,7 @@ TEST_F(UrlTest, https)
     string url_s = "https://www.baidu.com/path?a=b";
     Url url;
     url.parse(url_s);
-    INFOLN("protocol:{}, host:{}, port:{}, path:{}, query:{}\n", url.protocol, url.host, url.port, url.path, url.query);
+    INFOLN("protocol:{}, host:{}, port:{}, path:{}, query:{}", url.protocol, url.host, url.port, url.path, url.query);
     EXPECT_EQ("https", url.protocol);
     EXPECT_EQ("www.baidu.com", url.host);
     EXPECT_EQ(443, url.port);

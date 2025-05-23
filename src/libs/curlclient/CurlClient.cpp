@@ -10,7 +10,7 @@ HttpClient::HttpClient()
     CURLcode ret;
     ret = curl_global_init(CURL_GLOBAL_ALL);
     if (ret != CURLE_OK) {
-        ERRLN("curl_global_init() failed {}:{}\n", ret, curl_easy_strerror(ret));
+        ERRLN("curl_global_init() failed {}:{}", ret, curl_easy_strerror(ret));
         return;
     }
 }
@@ -57,7 +57,7 @@ struct curl_slist* HttpClient::genHeader(map<string, string>* headers)
         oss << it.first << ": " << it.second;
         headerlist = curl_slist_append(headerlist, oss.str().c_str());
         if (!headerlist) {
-            ERRLN("curl_slist_append() return nullptr maybe memory not enough\n");
+            ERRLN("curl_slist_append() return nullptr maybe memory not enough");
             return nullptr;
         }
     }
@@ -116,7 +116,7 @@ int HttpClient::request(string url, int post, long timeout, map<string, string>*
     curl_easy_setopt(handle, CURLOPT_SSL_VERIFYHOST, 0L);
     res = curl_easy_perform(handle);
     if (res != CURLE_OK) {
-        ERRLN("curl_easy_perform() failed {}:{}\n", ret, curl_easy_strerror(res));
+        ERRLN("curl_easy_perform() failed {}:{}", ret, curl_easy_strerror(res));
         ret = -1;
         goto end;
     }
@@ -127,7 +127,7 @@ int HttpClient::request(string url, int post, long timeout, map<string, string>*
         contentType = ct;
     }
     content = oss.str();
-    INFOLN("http post:{} url:{} timeout:{} form:{} code:{} contentType:{} content:{}\n", post, url, timeout, p, code, contentType, content);
+    INFOLN("http post:{} url:{} timeout:{} form:{} code:{} contentType:{} content:{}", post, url, timeout, p, code, contentType, content);
 end:
     if (headerlist) {
         curl_slist_free_all(headerlist);

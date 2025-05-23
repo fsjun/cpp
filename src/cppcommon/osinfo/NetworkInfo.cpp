@@ -127,14 +127,14 @@ static string getMac(string name)
     if (sock < 0) {
         int err = errno;
         char* msg = strerror(err);
-        ERRLN("socket error {}:{}\n", err, msg ? msg : "");
+        ERRLN("socket error {}:{}", err, msg ? msg : "");
         return "";
     }
     strcpy(ifreq.ifr_name, name.c_str());
     if (ioctl(sock, SIOCGIFHWADDR, &ifreq) < 0) {
         int err = errno;
         char* msg = strerror(err);
-        ERRLN("ioctl error {}:{}\n", err, msg ? msg : "");
+        ERRLN("ioctl error {}:{}", err, msg ? msg : "");
         return "";
     }
     snprintf(mac, sizeof(mac),"%02x:%02x:%02x:%02x:%02x:%02x",
@@ -177,14 +177,14 @@ vector<std::shared_ptr<NetworkInfo::CardInfo>> NetworkInfo::GetAllCardInfo()
             cardInfo->mask = addressBuffer;
             // mac
             cardInfo->mac = getMac(cardInfo->name);
-            INFOLN("{} IPv4 Address {} mask {} mac {}\n", cardInfo->name, cardInfo->ip, cardInfo->mask, cardInfo->mac);
+            INFOLN("{} IPv4 Address {} mask {} mac {}", cardInfo->name, cardInfo->ip, cardInfo->mask, cardInfo->mac);
             vec.emplace_back(cardInfo);
         } else if (ifa->ifa_addr->sa_family == AF_INET6) { // check it is IP6
             // is a valid IP6 Address
             addr = &((struct sockaddr_in*)ifa->ifa_addr)->sin_addr;
             char addressBuffer[INET6_ADDRSTRLEN];
             inet_ntop(AF_INET6, addr, addressBuffer, INET6_ADDRSTRLEN);
-            INFOLN("{} IPv6 Address {}\n", ifa->ifa_name, addressBuffer);
+            INFOLN("{} IPv6 Address {}", ifa->ifa_name, addressBuffer);
         }
         ifa = ifa->ifa_next;
     }

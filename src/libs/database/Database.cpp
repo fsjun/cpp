@@ -29,10 +29,10 @@ int Database::connect()
         }
         ret = 0;
     } catch (std::exception& e) {
-        ERRLN("exception on connect mysql: {}\n", e.what());
+        ERRLN("exception on connect mysql: {}", e.what());
         mSession.reset();
     } catch (...) {
-        ERRLN("exception on connect mysql\n");
+        ERRLN("exception on connect mysql");
         mSession.reset();
     }
     return ret;
@@ -60,7 +60,7 @@ int Database::insert(string sql, std::vector<std::any> params)
             mysqlx::SqlStatement sqlStatement = mSession->sql(sql);
             ret = bindParams(sqlStatement, params);
             if (ret < 0) {
-                ERRLN("bindParams error\n");
+                ERRLN("bindParams error");
                 std::this_thread::sleep_for(std::chrono::milliseconds(500));
                 continue;
             }
@@ -69,11 +69,11 @@ int Database::insert(string sql, std::vector<std::any> params)
             ret = 0;
             break;
         } catch (std::exception& e) {
-            ERRLN("sql exception: {}\n", e.what());
+            ERRLN("sql exception: {}", e.what());
             mSession.reset();
             ret = -1;
         } catch (...) {
-            ERRLN("sql exception\n");
+            ERRLN("sql exception");
             mSession.reset();
             ret = -1;
         }
@@ -104,7 +104,7 @@ int Database::execSql(string sql, std::vector<std::any> params)
             mysqlx::SqlStatement sqlStatement = mSession->sql(sql);
             ret = bindParams(sqlStatement, params);
             if (ret < 0) {
-                ERRLN("bindParams error\n");
+                ERRLN("bindParams error");
                 std::this_thread::sleep_for(std::chrono::milliseconds(500));
                 continue;
             }
@@ -113,11 +113,11 @@ int Database::execSql(string sql, std::vector<std::any> params)
             ret = 0;
             break;
         } catch (std::exception& e) {
-            ERRLN("sql exception: {}\n", e.what());
+            ERRLN("sql exception: {}", e.what());
             mSession.reset();
             ret = -1;
         } catch (...) {
-            ERRLN("sql exception\n");
+            ERRLN("sql exception");
             mSession.reset();
             ret = -1;
         }
@@ -147,7 +147,7 @@ int Database::execSql(std::string sql, std::vector<std::any> params, std::vector
             mysqlx::SqlStatement sqlStatement = mSession->sql(sql);
             ret = bindParams(sqlStatement, params);
             if (ret < 0) {
-                ERRLN("bindParams error\n");
+                ERRLN("bindParams error");
                 std::this_thread::sleep_for(std::chrono::milliseconds(500));
                 continue;
             }
@@ -203,11 +203,11 @@ int Database::execSql(std::string sql, std::vector<std::any> params, std::vector
             ret = 0;
             break;
         } catch (std::exception& e) {
-            ERRLN("exception on query mysql: {}\n", e.what());
+            ERRLN("exception on query mysql: {}", e.what());
             mSession.reset();
             ret = -1;
         } catch (...) {
-            ERRLN("exception on query mysql\n");
+            ERRLN("exception on query mysql");
             mSession.reset();
             ret = -1;
         }
@@ -231,7 +231,7 @@ int Database::execSql(std::string sql, std::vector<std::any> params, Json::Value
             mysqlx::SqlStatement sqlStatement = mSession->sql(sql);
             ret = bindParams(sqlStatement, params);
             if (ret < 0) {
-                ERRLN("bindParams error\n");
+                ERRLN("bindParams error");
                 std::this_thread::sleep_for(std::chrono::milliseconds(500));
                 continue;
             }
@@ -287,11 +287,11 @@ int Database::execSql(std::string sql, std::vector<std::any> params, Json::Value
             ret = 0;
             break;
         } catch (std::exception& e) {
-            ERRLN("exception on query mysql: {}\n", e.what());
+            ERRLN("exception on query mysql: {}", e.what());
             mSession.reset();
             ret = -1;
         } catch (...) {
-            ERRLN("exception on query mysql\n");
+            ERRLN("exception on query mysql");
             mSession.reset();
             ret = -1;
         }
@@ -334,7 +334,7 @@ int Database::bindParams(mysqlx::SqlStatement& sqlStatement, std::vector<std::an
         } else if (it.type() == typeid(char const*)) {
             sqlStatement.bind(any_cast<char const*>(it));
         } else {
-            ERRLN("unsupported std::any type[{}]\n", it.type().name());
+            ERRLN("unsupported std::any type[{}]", it.type().name());
             return -1;
         }
     }

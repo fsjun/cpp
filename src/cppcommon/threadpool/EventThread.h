@@ -51,7 +51,7 @@ protected:
             }
             auto it = mHandler.find(e.id);
             if (it == mHandler.end()) {
-                WARNLN("miss event handler id:{}\n", e.id);
+                WARNLN("miss event handler id:{}", e.id);
                 continue;
             }
             auto func = it->second;

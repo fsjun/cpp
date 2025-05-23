@@ -54,7 +54,7 @@ string Json::toString(any& json)
     } else if (json.type() == typeid(char const*)) {
         is << any_cast<char const*>(json);
     } else {
-        ERRLN("unsupported json type[{}]\n", json.type().name());
+        ERRLN("unsupported json type[{}]", json.type().name());
         return "";
     }
     jsonstr = is.str();
@@ -113,7 +113,7 @@ int Json::jsonToString(any& json, string& jsonstr)
         }
         is << str;
     } else {
-        ERRLN("unsupported json type[{}]\n", json.type().name());
+        ERRLN("unsupported json type[{}]", json.type().name());
         return -1;
     }
     jsonstr = is.str();

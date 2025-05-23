@@ -460,7 +460,7 @@ void Endpoint::log_writer(int level, const char* buffer, int len)
     if (!running) {
         return;
     }
-    INFOLN("{:.{}}\n", buffer, len);
+    INFOLN("{:.{}}", buffer, len);
 }
 
 /*
@@ -592,7 +592,7 @@ pj_bool_t Endpoint::call_on_incoming(pjsip_rx_data* rdata)
         pjsip_endpt_respond_stateless(mEndpt, rdata, PJSIP_SC_TEMPORARILY_UNAVAILABLE, NULL, NULL, NULL);
         return PJ_TRUE;
     }
-    INFOLN("incoming call: {}\n", rdata->msg_info.info);
+    INFOLN("incoming call: {}", rdata->msg_info.info);
     auto callService = CallService::GetInstance();
     callService->on_incoming_call(rdata, &mAppModule);
     return PJ_TRUE;
@@ -641,17 +641,17 @@ void Endpoint::on_state_changed(pjsip_inv_session* inv, pjsip_event* e)
 
 void Endpoint::on_new_session(pjsip_inv_session* inv, pjsip_event* e)
 {
-    INFOLN("on_new_session\n");
+    INFOLN("on_new_session");
 }
 
 void Endpoint::on_media_update(pjsip_inv_session* inv_ses, pj_status_t status)
 {
-    INFOLN("on_media_update\n");
+    INFOLN("on_media_update");
 }
 
 void Endpoint::on_rx_offer2(pjsip_inv_session* inv, struct pjsip_inv_on_rx_offer_cb_param* param)
 {
-    INFOLN("on_rx_offer2\n");
+    INFOLN("on_rx_offer2");
     if (!running) {
         return;
     }
@@ -661,23 +661,23 @@ void Endpoint::on_rx_offer2(pjsip_inv_session* inv, struct pjsip_inv_on_rx_offer
 
 void Endpoint::on_create_offer(pjsip_inv_session* inv, pjmedia_sdp_session** p_offer)
 {
-    INFOLN("on_create_offer\n");
+    INFOLN("on_create_offer");
 }
 
 void Endpoint::on_tsx_state_changed(pjsip_inv_session* inv, pjsip_transaction* tsx, pjsip_event* e)
 {
-    // INFOLN("on_tsx_state_changed\n");
+    // INFOLN("on_tsx_state_changed");
 }
 
 pjsip_redirect_op Endpoint::on_redirected(pjsip_inv_session* inv, const pjsip_uri* target, const pjsip_event* e)
 {
-    INFOLN("on_redirected\n");
+    INFOLN("on_redirected");
     return PJSIP_REDIRECT_REJECT;
 }
 
 pj_status_t Endpoint::on_rx_reinvite(pjsip_inv_session* inv, const pjmedia_sdp_session* offer, pjsip_rx_data* rdata)
 {
-    INFOLN("on_rx_reinvite\n");
+    INFOLN("on_rx_reinvite");
     return !PJ_SUCCESS;
 }
 

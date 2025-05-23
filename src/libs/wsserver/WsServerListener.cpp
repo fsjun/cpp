@@ -20,25 +20,25 @@ int WsServerListener::start()
     // Open the acceptor
     mAcceptor.open(endpoint.protocol(), ec);
     if (ec) {
-        ERRLN("websocket open error, host:{} port:{} msg:{}\n", mHost, mPort, ec.message());
+        ERRLN("websocket open error, host:{} port:{} msg:{}", mHost, mPort, ec.message());
         return -1;
     }
     // Allow address reuse
     mAcceptor.set_option(net::socket_base::reuse_address(true), ec);
     if (ec) {
-        ERRLN("websocket set_option error, host:{} port:{} msg:{}\n", mHost, mPort, ec.message());
+        ERRLN("websocket set_option error, host:{} port:{} msg:{}", mHost, mPort, ec.message());
         return -1;
     }
     // Bind to the server address
     mAcceptor.bind(endpoint, ec);
     if (ec) {
-        ERRLN("websocket bind error, host:{} port:{} msg:{}\n", mHost, mPort, ec.message());
+        ERRLN("websocket bind error, host:{} port:{} msg:{}", mHost, mPort, ec.message());
         return -1;
     }
     // Start listening for connections
     mAcceptor.listen(net::socket_base::max_listen_connections, ec);
     if (ec) {
-        ERRLN("websocket listen error, host:{} port:{} msg:{}\n", mHost, mPort, ec.message());
+        ERRLN("websocket listen error, host:{} port:{} msg:{}", mHost, mPort, ec.message());
         return -1;
     }
     do_accept();
@@ -54,7 +54,7 @@ void WsServerListener::do_accept()
 void WsServerListener::on_accept(beast::error_code ec, tcp::socket socket)
 {
     if (ec) {
-        ERRLN("websocket accept error, host:{} port:{} msg:{}\n", mHost, mPort, ec.message());
+        ERRLN("websocket accept error, host:{} port:{} msg:{}", mHost, mPort, ec.message());
         return;
     }
     if (mSslEnable) {

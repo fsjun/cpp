@@ -21,10 +21,10 @@ int AddFileToZip(zipFile zFile, const string& fileName, const string& fileNameIn
     zip_fileinfo zFileInfo = { 0 };
     int ret = zipOpenNewFileInZip3_64(zFile, fileNameInZip.c_str(), &zFileInfo, NULL, 0, NULL, 0, NULL, (opt_compress_level != 0) ? Z_DEFLATED : 0, opt_compress_level, 0, -MAX_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY, NULL, 0, 1);
     if (ret != ZIP_OK) {
-        ERRLN("zipOpenNewFileInZip3_64 failed\n");
+        ERRLN("zipOpenNewFileInZip3_64 failed");
         return -1;
     }
-    DEBUGLN("begin write file, fileName:{} fileNameInZip:{}\n", fileName, fileNameInZip);
+    DEBUGLN("begin write file, fileName:{} fileNameInZip:{}", fileName, fileNameInZip);
     std::fstream ifs(fileName.c_str(), std::ios::binary | std::ios::in);
     char buff[1024] = { 0 };
     int size = sizeof(buff);
@@ -35,17 +35,17 @@ int AddFileToZip(zipFile zFile, const string& fileName, const string& fileNameIn
         if (gcount > 0) {
             ret = zipWriteInFileInZip(zFile, buff, gcount);
             if (ZIP_OK != ret) {
-                ERRLN("zipWriteInFileInZip error, ret:{}\n", ret);
+                ERRLN("zipWriteInFileInZip error, ret:{}", ret);
                 ret = -1;
                 break;
             }
         }
     } while (gcount == size);
     ifs.close();
-    DEBUGLN("end write file, fileName:{} fileNameInZip:{}\n", fileName, fileNameInZip);
+    DEBUGLN("end write file, fileName:{} fileNameInZip:{}", fileName, fileNameInZip);
     int res = zipCloseFileInZip(zFile);
     if (ZIP_OK != res) {
-        ERRLN("zipCloseFileInZip error, res:{}\n", res);
+        ERRLN("zipCloseFileInZip error, res:{}", res);
         return -1;
     }
     return ret;
@@ -58,12 +58,12 @@ int AddDirToZip(zipFile zFile, const string& fileNameInZip)
     string dirNameInZip = fileNameInZip + "/";
     int ret = zipOpenNewFileInZip3_64(zFile, dirNameInZip.c_str(), &zFileInfo, NULL, 0, NULL, 0, NULL, (opt_compress_level != 0) ? Z_DEFLATED : 0, opt_compress_level, 0, -MAX_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY, NULL, 0, 1);
     if (ret != ZIP_OK) {
-        ERRLN("zipOpenNewFileInZip3_64 failed\n");
+        ERRLN("zipOpenNewFileInZip3_64 failed");
         return -1;
     }
     int res = zipCloseFileInZip(zFile);
     if (ZIP_OK != res) {
-        ERRLN("zipCloseFileInZip error, res:{}\n", res);
+        ERRLN("zipCloseFileInZip error, res:{}", res);
         return -1;
     }
     return ret;
@@ -92,18 +92,18 @@ int Compress::Zip(string dir, string zipFileName)
     vector<string> fileVec;
     EnumDirFiles(dir, fileVec);
     if (fileVec.empty()) {
-        ERRLN("{} has no file\n", dir);
+        ERRLN("{} has no file", dir);
         return -1;
     }
     zipFile zFile = zipOpen64(zipFileName.c_str(), APPEND_STATUS_CREATE);
     if (zFile == NULL) {
-        ERRLN("zipOpen failed\n");
+        ERRLN("zipOpen failed");
         return -1;
     }
     Defer d([zFile]() {
         int ret = zipClose(zFile, NULL);
         if (ZIP_OK != ret) {
-            ERRLN("zipClose error, ret:{}\n", ret);
+            ERRLN("zipClose error, ret:{}", ret);
         }
     });
     int ret = 0;
@@ -119,13 +119,13 @@ int Compress::Zip(string dir, string zipFileName)
         if (std::filesystem::is_directory(fileName)) {
             ret = AddDirToZip(zFile, fileNameInZip);
             if (ret != ZIP_OK) {
-                ERRLN("write in zip failed\n");
+                ERRLN("write in zip failed");
                 return -1;
             }
         } else {
             ret = AddFileToZip(zFile, fileName, fileNameInZip);
             if (ret != ZIP_OK) {
-                ERRLN("write in zip failed\n");
+                ERRLN("write in zip failed");
                 return -1;
             }
         }
@@ -141,7 +141,7 @@ int Compress::UnZip(string zipFileName, string dir)
     }
     unzFile unzfile = unzOpen64(zipFileName.c_str());
     if (unzfile == NULL) {
-        ERRLN("unzOpen64 failed, fileName:{}\n", zipFileName);
+        ERRLN("unzOpen64 failed, fileName:{}", zipFileName);
         return -1;
     }
     Defer d([unzfile]() {
@@ -150,7 +150,7 @@ int Compress::UnZip(string zipFileName, string dir)
     unz_global_info64* globalInfo = new unz_global_info64();
     ret = unzGetGlobalInfo64(unzfile, globalInfo);
     if (ret != UNZ_OK) {
-        ERRLN("unzGetGlobalInfo64 failed\n");
+        ERRLN("unzGetGlobalInfo64 failed");
         return -1;
     }
     unz_file_info64* fileInfo = new unz_file_info64();
@@ -160,7 +160,7 @@ int Compress::UnZip(string zipFileName, string dir)
         size = sizeof(fileNameInZip);
         ret = unzGetCurrentFileInfo64(unzfile, fileInfo, fileNameInZip, size, nullptr, 0, nullptr, 0);
         if (ret != UNZ_OK) {
-            ERRLN("unzGetCurrentFileInfo64 failed\n");
+            ERRLN("unzGetCurrentFileInfo64 failed");
             return -1;
         }
         string fileName = fileNameInZip;
@@ -171,7 +171,7 @@ int Compress::UnZip(string zipFileName, string dir)
             std::filesystem::create_directories(p.parent_path());
             ret = unzOpenCurrentFile(unzfile);
             if (ret != UNZ_OK) {
-                ERRLN("unzOpenCurrentFile failed.\n");
+                ERRLN("unzOpenCurrentFile failed.");
                 return -1;
             }
             std::ofstream ofs(p, std::ios::binary);
@@ -181,7 +181,7 @@ int Compress::UnZip(string zipFileName, string dir)
                 memset(buff, 0, size);
                 ret = unzReadCurrentFile(unzfile, buff, size);
                 if (ret < 0) {
-                    ERRLN("unzReadCurrentFile failed\n");
+                    ERRLN("unzReadCurrentFile failed");
                     break;
                 } else if (ret == 0) {
                     break;
@@ -201,7 +201,7 @@ int Compress::GetFirstNodeName(string zipFileName, string& fileName)
     int ret = 0;
     unzFile unzfile = unzOpen64(zipFileName.c_str());
     if (unzfile == NULL) {
-        ERRLN("unzOpen64 failed, fileName:{}\n", zipFileName);
+        ERRLN("unzOpen64 failed, fileName:{}", zipFileName);
         return -1;
     }
     Defer d([unzfile]() {
@@ -210,7 +210,7 @@ int Compress::GetFirstNodeName(string zipFileName, string& fileName)
     unz_global_info64* globalInfo = new unz_global_info64();
     ret = unzGetGlobalInfo64(unzfile, globalInfo);
     if (ret != UNZ_OK) {
-        ERRLN("unzGetGlobalInfo64 failed\n");
+        ERRLN("unzGetGlobalInfo64 failed");
         return -1;
     }
     unz_file_info64* fileInfo = new unz_file_info64();
@@ -218,7 +218,7 @@ int Compress::GetFirstNodeName(string zipFileName, string& fileName)
     int size = sizeof(fileNameInZip);
     ret = unzGetCurrentFileInfo64(unzfile, fileInfo, fileNameInZip, size, nullptr, 0, nullptr, 0);
     if (ret != UNZ_OK) {
-        ERRLN("unzGetCurrentFileInfo64 failed\n");
+        ERRLN("unzGetCurrentFileInfo64 failed");
         return -1;
     }
     string tmpFileName = fileNameInZip;
@@ -237,10 +237,10 @@ int Compress::Zip7z(string dir, string zipFileName)
     string result;
     int ret = Process::SystemGb18030(cmd, result);
     if (ret < 0) {
-        ERRLN("cmd execute fail, cmd:{} result:{}\n", cmd, result);
+        ERRLN("cmd execute fail, cmd:{} result:{}", cmd, result);
         return ret;
     }
-    DEBUGLN("\n{}\n{}\n", cmd, result);
+    DEBUGLN("{}{}", cmd, result);
     return ret;
 }
 
@@ -250,10 +250,10 @@ int Compress::UnZip7z(string zipFileName, string dir)
     string result;
     int ret = Process::SystemGb18030(cmd, result);
     if (ret < 0) {
-        ERRLN("cmd execute fail, cmd:{} result:{}\n", cmd, result);
+        ERRLN("cmd execute fail, cmd:{} result:{}", cmd, result);
         return ret;
     }
-    DEBUGLN("\n{}\n{}\n", cmd, result);
+    DEBUGLN("{}{}", cmd, result);
     return 0;
 }
 
@@ -263,21 +263,21 @@ int Compress::GetFirstNodeName7z(string zipFileName, string& fileName)
     string result;
     int ret = Process::System(cmd, result);
     if (ret < 0) {
-        ERRLN("cmd execute fail, cmd:{} result:{}\n", cmd, result);
+        ERRLN("cmd execute fail, cmd:{} result:{}", cmd, result);
         return ret;
     }
-    DEBUGLN("\n{}\n{}\n", cmd, result);
+    DEBUGLN("{}{}", cmd, result);
     vector<string> lineVec;
     boost::split(lineVec, result, boost::is_any_of("\r\n"), boost::token_compress_on);
     if (lineVec.size() < 14) {
-        ERRLN("result has no file, cmd:{} result:{}\n", cmd, result);
+        ERRLN("result has no file, cmd:{} result:{}", cmd, result);
         return -1;
     }
     string fileStr = lineVec[13];
     vector<string> fileVec;
     boost::split(fileVec, fileStr, boost::is_any_of(" "), boost::token_compress_on);
     if (fileStr.size() < 1) {
-        ERRLN("fileStr has no file path, fileStr:{}\n", fileStr);
+        ERRLN("fileStr has no file path, fileStr:{}", fileStr);
         return -1;
     }
     fileName = fileVec.back();

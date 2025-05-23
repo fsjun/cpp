@@ -9,7 +9,7 @@ int AccountService::reg(string user, string password, string host, int port, fun
     addAccount(user_uri, acc);
     ret = acc->reg();
     if (ret < 0) {
-        ERRLN("reg fail, user:{} password:{} host:{} port:{}\n", user, password, host, port);
+        ERRLN("reg fail, user:{} password:{} host:{} port:{}", user, password, host, port);
         removeAccount(user_uri);
         return -1;
     }

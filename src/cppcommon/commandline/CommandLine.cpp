@@ -14,7 +14,7 @@ int CommandLine::parse(int argc, char* argv[], boost::program_options::options_d
     try {
         store(parse_command_line(argc, argv, opts), mVm);
     } catch (boost::program_options::error_with_no_option_name& ex) {
-        ERRLN("parse arguments error: {}\n", ex.what());
+        ERRLN("parse arguments error: {}", ex.what());
         ret = -1;
     }
     notify(mVm);

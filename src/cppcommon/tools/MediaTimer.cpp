@@ -33,7 +33,7 @@ inline void MediaTimer::next()
     real_sleep_ms = sleep_ms - (now - last);
     mLastTimeStamp += sleep_ms;
     if (real_sleep_ms <= 0) {
-        WARNLN("media timer sleep not more than 0, real_sleep_ms:{} sleep_ms:{} now:{} last:{}\n", real_sleep_ms, sleep_ms, now, last);
+        WARNLN("media timer sleep not more than 0, real_sleep_ms:{} sleep_ms:{} now:{} last:{}", real_sleep_ms, sleep_ms, now, last);
         return;
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(real_sleep_ms));
@@ -58,7 +58,7 @@ inline void MediaTimer::next_30()
     real_sleep_ms = sleep_ms - (now - last);
     mLastTimeStamp += sleep_ms;
     if (real_sleep_ms <= 0) {
-        WARNLN("media timer sleep not more than 0, real_sleep_ms:{} sleep_ms:{} now:{} last:{}\n", real_sleep_ms, sleep_ms, now, last);
+        WARNLN("media timer sleep not more than 0, real_sleep_ms:{} sleep_ms:{} now:{} last:{}", real_sleep_ms, sleep_ms, now, last);
         return;
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(real_sleep_ms));
