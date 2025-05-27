@@ -96,8 +96,9 @@ int Amqpcpp::connect()
     mReceiveChannel = make_shared<AMQP::TcpChannel>(mConnection.get());
     mSendChannel = make_shared<AMQP::TcpChannel>(mConnection.get());
     mReliable = make_shared<AMQP::Reliable<>>(*mSendChannel);
-    mReceiveChannel->onError([](const char* message) {
+    mReceiveChannel->onError([this](const char* message) {
         ERRLN("channel error: {}", message);
+        ev_break(mLoop, EVBREAK_ALL);
     });
     mReceiveChannel->onReady([weak]() {
         auto self = weak.lock();
