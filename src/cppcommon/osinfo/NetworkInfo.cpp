@@ -1,5 +1,10 @@
 #include "NetworkInfo.h"
+#ifdef _WIN32
+#include <WinSock2.h>
+#include <iptypes.h>
+#else
 #include <arpa/inet.h>
+#endif
 #include <iomanip>
 #include <regex>
 #include <sstream>
@@ -42,7 +47,7 @@ string NetworkInfo::GetInterfaceMac()
 vector<std::shared_ptr<NetworkInfo::CardInfo>> NetworkInfo::GetAllCardInfo()
 {
     vector<std::shared_ptr<NetworkInfo::CardInfo>> vec;
-    PIP_ADAPTER_INFOLN pIpAdapterInfo = new IP_ADAPTER_INFOLN();
+    PIP_ADAPTER_INFO pIpAdapterInfo = new IP_ADAPTER_INFO();
     unsigned long stSize = sizeof(IP_ADAPTER_INFO);
     string ip;
     int nRel = GetAdaptersInfo(pIpAdapterInfo, &stSize);
@@ -137,13 +142,13 @@ static string getMac(string name)
         ERRLN("ioctl error {}:{}", err, msg ? msg : "");
         return "";
     }
-    snprintf(mac, sizeof(mac),"%02x:%02x:%02x:%02x:%02x:%02x",
-            (unsigned char)ifreq.ifr_hwaddr.sa_data[0],
-            (unsigned char)ifreq.ifr_hwaddr.sa_data[1],
-            (unsigned char)ifreq.ifr_hwaddr.sa_data[2],
-            (unsigned char)ifreq.ifr_hwaddr.sa_data[3],
-            (unsigned char)ifreq.ifr_hwaddr.sa_data[4],
-            (unsigned char)ifreq.ifr_hwaddr.sa_data[5]);
+    snprintf(mac, sizeof(mac), "%02x:%02x:%02x:%02x:%02x:%02x",
+        (unsigned char)ifreq.ifr_hwaddr.sa_data[0],
+        (unsigned char)ifreq.ifr_hwaddr.sa_data[1],
+        (unsigned char)ifreq.ifr_hwaddr.sa_data[2],
+        (unsigned char)ifreq.ifr_hwaddr.sa_data[3],
+        (unsigned char)ifreq.ifr_hwaddr.sa_data[4],
+        (unsigned char)ifreq.ifr_hwaddr.sa_data[5]);
     return mac;
 }
 
