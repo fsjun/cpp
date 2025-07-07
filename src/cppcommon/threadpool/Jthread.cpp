@@ -31,7 +31,9 @@ void Jthread::stop()
 
 void Jthread::join()
 {
-    mThread.reset();
+    if (mThread && mThread->joinable()) {
+        mThread->join();
+    }
 }
 
 bool Jthread::postDelayedTask(string taskId, long ms, function<void()> func)
