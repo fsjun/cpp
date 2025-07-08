@@ -1,5 +1,6 @@
 #include "buffer/BufferVector.h"
 #include <mutex>
+#include <string.h>
 
 void BufferVector::append(vector<char> buffer)
 {

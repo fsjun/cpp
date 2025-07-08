@@ -8,6 +8,7 @@ public:
     static std::string BinToHex(unsigned char* bin, int len);
     static std::string LocalTime(std::string fmt = "%F %T");
     static std::string LocalTimeMs(std::string fmt = "%F %T");
+    static std::string TimestampToLocalMs(long long timestamp, std::string fmt = "%F %T");
     // %Y-%m-%d-%H-%M-%S
     static std::string TimestampToLocal(long timestamp, std::string fmt = "%F %T");
     static long StringToTimestamp(std::string date, std::string fmt = "%F %T");

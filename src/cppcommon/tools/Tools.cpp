@@ -39,8 +39,15 @@ std::string Tools::LocalTimeMs(std::string fmt)
     auto time_now = system_clock::now();
     auto duration_in_ms = chrono::duration_cast<chrono::milliseconds>(time_now.time_since_epoch());
     long long time_ms = duration_in_ms.count();
-    long time_s = time_ms / 1000;
-    int ms = time_ms % 1000;
+    string str = TimestampToLocalMs(time_ms, fmt);
+    return str;
+}
+
+std::string Tools::TimestampToLocalMs(long long timestamp, std::string fmt)
+{
+    using std::chrono::system_clock;
+    long time_s = timestamp / 1000;
+    int ms = timestamp % 1000;
     string str = TimestampToLocal(time_s, fmt);
     ostringstream oss;
     oss << str << "." << setfill('0') << setw(3) << ms;
