@@ -37,6 +37,12 @@ public:
         sMap.erase(id);
     }
 
+    static int Size()
+    {
+        std::lock_guard l(sMutex);
+        return sMap.size();
+    }
+
 protected:
     static std::map<string, shared_ptr<T>> sMap;
     static std::mutex sMutex;
