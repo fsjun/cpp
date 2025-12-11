@@ -155,6 +155,12 @@ void TcpTransport::do_read(char* data, int size, std::function<void(const boost:
     boost::asio::async_read(*mSock, boost::asio::buffer(data, size), cb);
 }
 
+void TcpTransport::async_read_until(boost::asio::streambuf& buffer, char delimiter, std::function<void(const boost::system::error_code& err, const size_t& bytes)> cb)
+{
+    std::lock_guard<mutex> l(mMutex);
+    boost::asio::async_read_until(*mSock, buffer, delimiter, cb);
+}
+
 void TcpTransport::do_write_some(char* data, int size, std::function<void(const boost::system::error_code& err, const size_t& bytes)> cb)
 {
     std::lock_guard<mutex> l(mMutex);

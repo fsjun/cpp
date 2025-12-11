@@ -12,6 +12,7 @@ public:
 
     void do_read_some(char* data, int size, std::function<void(const boost::system::error_code& err, const size_t& bytes)> cb);
     void do_read(char* data, int size, std::function<void(const boost::system::error_code& err, const size_t& bytes)> cb);
+    void async_read_until(boost::asio::streambuf& buffer, char delimiter, std::function<void(const boost::system::error_code& err, const size_t& bytes)> cb);
     void do_write_some(char* data, int size, std::function<void(const boost::system::error_code& err, const size_t& bytes)> cb);
     void do_write(char* data, int size, std::function<void(const boost::system::error_code& err, const size_t& bytes)> cb);
 
