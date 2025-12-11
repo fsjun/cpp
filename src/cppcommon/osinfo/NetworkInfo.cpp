@@ -1,10 +1,4 @@
 #include "NetworkInfo.h"
-#ifdef _WIN32
-#include <WinSock2.h>
-#include <iptypes.h>
-#else
-#include <arpa/inet.h>
-#endif
 #include <iomanip>
 #include <regex>
 #include <sstream>

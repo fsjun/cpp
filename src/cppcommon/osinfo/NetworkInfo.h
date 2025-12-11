@@ -4,11 +4,11 @@
 #include <iostream>
 #include <memory>
 #include <vector>
-#ifdef _WIN32
-#include <Windows.h>
 
-#include <Iphlpapi.h>
+#ifdef _WIN32
 #include <Winsock2.h>
+#include <Windows.h>
+#include <Iphlpapi.h>
 #include <Ws2tcpip.h>
 // #pragma comment(lib, "ws2_32.lib ")
 #pragma comment(lib, "Iphlpapi.lib")
