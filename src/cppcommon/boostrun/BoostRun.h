@@ -1,7 +1,6 @@
 #pragma once
 
-#include "boost/asio.hpp"
-#include "threadpool/ThreadPool.h"
+#include "tools/boost_common.h"
 #include "tools/Singleton.h"
 #include <iostream>
 #include <memory>
