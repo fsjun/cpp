@@ -1,10 +1,8 @@
 
 #include "transport/TcpTransport.h"
-#include "transport/TransportManager.h"
 
-TcpTransport::TcpTransport(shared_ptr<boost::asio::io_context>& ioc)
+TcpTransport::TcpTransport(shared_ptr<boost::asio::io_context>& ioc) : Transport(ioc)
 {
-    mIoc = ioc;
 }
 
 TcpTransport::~TcpTransport()
@@ -19,63 +17,63 @@ TcpTransport::~TcpTransport()
         mAcceptor->close(ec);
         mAcceptor.reset();
     }
-    if (mIoc) {
-        mIoc.reset();
+    if (mIoContext) {
+        mIoContext.reset();
     }
+    INFOLN("TcpTransport destructor id:{}", mId);
 }
 
-int TcpTransport::init(TransportTcpType type, string local_host, int local_port, string remote_host, int remote_port)
+int TcpTransport::init(bool isClient, string local_host, int local_port, string remote_host, int remote_port)
 {
-    if (TRANSPORT_TCP_TYPE_CLIENT == type) {
-        mSock = std::make_shared<boost::asio::ip::tcp::socket>(*mIoc);
+    if (isClient) {
+        mSock = std::make_shared<boost::asio::ip::tcp::socket>(*mIoContext);
         if (local_port > 0) {
             boost::asio::ip::tcp::endpoint local_ep(boost::asio::ip::address::from_string(local_host), local_port);
             boost::system::error_code ec;
             mSock->bind(local_ep, ec);
             if (ec) {
-                string err_msg = ec.message();
-                ERRLN("bind {}:{} error: {}", local_host, local_port, err_msg);
+                string err_msg = ec.what();
+                ERRLN("bind {}:{} error:{} id:{}", local_host, local_port, err_msg, mId);
                 return -1;
             }
             auto le = mSock->local_endpoint();
             mLocalPort = le.port();
-            INFOLN("local_ep is {}:{}", le.address().to_string(), le.port());
+            INFOLN("local_ep is {}:{} id:{}", le.address().to_string(), le.port(), mId);
         }
         do_connect(remote_host, remote_port);
-    } else if (TRANSPORT_TCP_TYPE_SERVER == type) {
-        mAcceptor = std::make_shared<boost::asio::ip::tcp::acceptor>(*mIoc);
+    } else {
+        mAcceptor = std::make_shared<boost::asio::ip::tcp::acceptor>(*mIoContext);
         boost::system::error_code ec;
         mAcceptor->open(boost::asio::ip::tcp::v4(), ec);
         if (ec) {
-            string err_msg = ec.message();
-            ERRLN("open {}:{} error: {}", local_host, local_port, err_msg);
+            string err_msg = ec.what();
+            ERRLN("open {}:{} error:{} id:{}", local_host, local_port, err_msg, mId);
             return -1;
         }
         mAcceptor->set_option(boost::asio::socket_base::reuse_address(true), ec);
         if (ec) {
-            string err_msg = ec.message();
-            ERRLN("set_option {}:{} error: {}", local_host, local_port, err_msg);
+            string err_msg = ec.what();
+            ERRLN("set_option {}:{} error:{} id:{}", local_host, local_port, err_msg, mId);
             return -1;
         }
         boost::asio::ip::tcp::endpoint local_ep(boost::asio::ip::address::from_string(local_host), local_port);
         mAcceptor->bind(local_ep, ec);
         if (ec) {
-            string err_msg = ec.message();
-            ERRLN("bind {}:{} error: {}", local_host, local_port, err_msg);
+            string err_msg = ec.what();
+            ERRLN("bind {}:{} error:{} id:{}", local_host, local_port, err_msg, mId);
             return -1;
         }
         auto le = mAcceptor->local_endpoint();
         mLocalPort = le.port();
-        INFOLN("local_ep is {}:{}", le.address().to_string(), le.port());
+        INFOLN("local_ep is {}:{} id:{}", le.address().to_string(), le.port(), mId);
         mAcceptor->listen(boost::asio::socket_base::max_listen_connections, ec);
         if (ec) {
-            string err_msg = ec.message();
-            ERRLN("listen {}:{} error: {}", local_host, local_port, err_msg);
+            string err_msg = ec.what();
+            ERRLN("listen {}:{} error:{} id:{}", local_host, local_port, err_msg, mId);
             return -1;
         }
         do_accept();
     }
-    mTransportTcpType = type;
     return 0;
 }
 
@@ -84,9 +82,9 @@ int TcpTransport::getLocalPort()
     return mLocalPort;
 }
 
-void TcpTransport::setCb(std::function<void(TransportTcpEventType type, shared_ptr<TcpTransport> transport)> cb)
+void TcpTransport::setListener(weak_ptr<Listener> listener)
 {
-    mCb = cb;
+    mListener = listener;
 }
 
 void TcpTransport::do_connect(string host, int port)
@@ -106,18 +104,19 @@ void TcpTransport::do_connect(string host, int port)
 void TcpTransport::on_connect(boost::system::error_code ec)
 {
     if (ec) {
-        ERRLN("on_connect error: {}", ec.message());
+        ERRLN("on_connect error:{} id:{}", ec.what(), mId);
+    }
+    auto self = mListener.lock();
+    if (!self) {
         return;
     }
-    if (mCb) {
-        mCb(TRANSPORT_TCP_EVENT_TYPE_ON_CONNECT, shared_from_this());
-    }
+    self->onConnect(shared_from_this(), ec);
 }
 
 void TcpTransport::do_accept()
 {
     std::lock_guard<mutex> l(mMutex);
-    shared_ptr<boost::asio::ip::tcp::socket> new_sock = std::make_shared<boost::asio::ip::tcp::socket>(*mIoc);
+    shared_ptr<boost::asio::ip::tcp::socket> new_sock = std::make_shared<boost::asio::ip::tcp::socket>(*mIoContext);
     weak_ptr<TcpTransport> weak = shared_from_this();
     mAcceptor->async_accept(*new_sock, [weak, this, new_sock](boost::system::error_code ec) {
         auto self = weak.lock();
@@ -131,44 +130,158 @@ void TcpTransport::do_accept()
 void TcpTransport::on_accept(shared_ptr<boost::asio::ip::tcp::socket> new_sock, boost::system::error_code ec)
 {
     if (ec) {
-        ERRLN("on_accept error: {}", ec.message());
+        ERRLN("on_accept error:{} id:{}", ec.what(), mId);
+    }
+    auto self = mListener.lock();
+    if (!self) {
         return;
     }
-    auto tcpTransport = std::make_shared<TcpTransport>(mIoc);
-    tcpTransport->mTransportTcpType = TRANSPORT_TCP_TYPE_ACCEPT;
-    tcpTransport->mSock = new_sock;
-    if (mCb) {
-        mCb(TRANSPORT_TCP_EVENT_TYPE_ON_ACCEPT, tcpTransport);
+    if (ec) {
+        self->onAccept(shared_from_this(), ec);
+    } else {
+        auto tcpTransport = std::make_shared<TcpTransport>(mIoContext);
+        tcpTransport->mSock = new_sock;
+        self->onAccept(tcpTransport, ec);
     }
-    do_accept();
 }
 
-void TcpTransport::do_read_some(char* data, int size, std::function<void(const boost::system::error_code& err, const size_t& bytes)> cb)
+void TcpTransport::do_read_some(shared_ptr<vector<char>> buff)
 {
     std::lock_guard<mutex> l(mMutex);
-    mSock->async_receive(boost::asio::buffer(data, size), 0, cb);
+    weak_ptr<TcpTransport> weak = shared_from_this();
+    auto cb = [weak, this, buff](const boost::system::error_code& err, const size_t& bytes) {
+        auto self = weak.lock();
+        if (!self) {
+            return;
+        }
+        on_read(buff, err, bytes);
+    };
+    if (buff->empty()) {
+        buff->resize(2048);
+    }
+    mSock->async_receive(boost::asio::buffer(buff->data(), buff->size()), 0, cb);
 }
 
-void TcpTransport::do_read(char* data, int size, std::function<void(const boost::system::error_code& err, const size_t& bytes)> cb)
+void TcpTransport::do_read(shared_ptr<vector<char>> buff)
 {
     std::lock_guard<mutex> l(mMutex);
-    boost::asio::async_read(*mSock, boost::asio::buffer(data, size), cb);
+    weak_ptr<TcpTransport> weak = shared_from_this();
+    auto cb = [weak, this, buff](const boost::system::error_code& err, const size_t& bytes) {
+        auto self = weak.lock();
+        if (!self) {
+            return;
+        }
+        on_read(buff, err, bytes);
+    };
+    if (buff->empty()) {
+        buff->resize(2048);
+    }
+    boost::asio::async_read(*mSock, boost::asio::buffer(buff->data(), buff->size()), cb);
 }
 
-void TcpTransport::async_read_until(boost::asio::streambuf& buffer, char delimiter, std::function<void(const boost::system::error_code& err, const size_t& bytes)> cb)
+void TcpTransport::async_read_until(shared_ptr<vector<char>> buff, char delimiter)
 {
     std::lock_guard<mutex> l(mMutex);
-    boost::asio::async_read_until(*mSock, buffer, delimiter, cb);
+    weak_ptr<TcpTransport> weak = shared_from_this();
+    auto cb = [weak, this, buff, delimiter](const boost::system::error_code& err, const size_t& bytes) {
+        auto self = weak.lock();
+        if (!self) {
+            return;
+        }
+        on_read_until(buff, delimiter, err, bytes);
+    };
+    boost::asio::async_read_until(*mSock, mStreambuffer, delimiter, cb);
 }
 
-void TcpTransport::do_write_some(char* data, int size, std::function<void(const boost::system::error_code& err, const size_t& bytes)> cb)
+void TcpTransport::do_write_some(shared_ptr<vector<char>> buff)
 {
     std::lock_guard<mutex> l(mMutex);
-    mSock->async_send(boost::asio::buffer(data, size), 0, cb);
+    weak_ptr<TcpTransport> weak = shared_from_this();
+    auto cb = [weak, this, buff](const boost::system::error_code& err, const size_t& bytes) {
+        auto self = weak.lock();
+        if (!self) {
+            return;
+        }
+        on_write(buff, err, bytes);
+    };
+    mSock->async_send(boost::asio::buffer(buff->data(), buff->size()), 0, cb);
 }
 
-void TcpTransport::do_write(char* data, int size, std::function<void(const boost::system::error_code& err, const size_t& bytes)> cb)
+void TcpTransport::write(shared_ptr<vector<char>> buff)
 {
-    std::lock_guard<mutex> l(mMutex);
-    boost::asio::async_write(*mSock, boost::asio::buffer(data, size), cb);
+    std::lock_guard<std::mutex> lock(mMutex);
+    if (mIsWrite) {
+        mPendingWrite.emplace_back(buff);
+        return;
+    }
+    mIsWrite = true;
+    doWrite(buff);
+}
+
+void TcpTransport::writePending()
+{
+    std::lock_guard<std::mutex> lock(mMutex);
+    if (mPendingWrite.empty()) {
+        mIsWrite = false;
+        return;
+    }
+    auto buff = mPendingWrite.front();
+    mPendingWrite.pop_front();
+    doWrite(buff);
+}
+
+void TcpTransport::doWrite(shared_ptr<vector<char>> buff)
+{
+    weak_ptr<TcpTransport> weak = shared_from_this();
+    auto cb = [weak, this, buff](const boost::system::error_code& err, const size_t& bytes) {
+        auto self = weak.lock();
+        if (!self) {
+            return;
+        }
+        on_write(buff, err, bytes);
+    };
+    boost::asio::async_write(*mSock, boost::asio::buffer(buff->data(), buff->size()), cb);
+}
+
+void TcpTransport::on_read(shared_ptr<vector<char>> buff, const boost::system::error_code& err, const size_t& bytes)
+{
+    if (err) {
+        ERRLN("on_read error:{} id:{}", err.what(), mId);
+    }
+    auto self = mListener.lock();
+    if (!self) {
+        return;
+    }
+    self->onRead(shared_from_this(), buff, err, bytes);
+}
+
+void TcpTransport::on_read_until(shared_ptr<vector<char>> buff, char delimiter, const boost::system::error_code& err, const size_t& bytes)
+{
+    if (err) {
+        ERRLN("on_read_until error:{} id:{}", err.what(), mId);
+    }
+    auto self = mListener.lock();
+    if (!self) {
+        return;
+    }
+    if (!err) {
+        std::istream is(&mStreambuffer);
+        std::string str;
+        std::getline(is, str, delimiter);
+        buff->assign(str.begin(), str.end());
+    }
+    self->onRead(shared_from_this(), buff, err, bytes);
+}
+
+void TcpTransport::on_write(shared_ptr<vector<char>> buff, const boost::system::error_code& err, const size_t& bytes)
+{
+    if (err) {
+        ERRLN("on_write error:{} id:{}", err.what(), mId);
+    }
+    writePending();
+    auto self = mListener.lock();
+    if (!self) {
+        return;
+    }
+    self->onWrite(shared_from_this(), buff, err, bytes);
 }

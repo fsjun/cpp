@@ -8,6 +8,7 @@ UdpTransport::UdpTransport(shared_ptr<boost::asio::io_context>& ioc)
 UdpTransport::~UdpTransport()
 {
     this->close();
+    INFO("UdpTransport destructor, id:{}", mId);
 }
 
 int UdpTransport::init(string host, int port)
@@ -18,7 +19,7 @@ int UdpTransport::init(string host, int port)
     mSock->open(ep.protocol());
     mSock->bind(ep, ec);
     if (ec) {
-        ERRLN("bind error address({}:{}): {}", host, port, ec.message());
+        ERRLN("bind error address({}:{}) error:{} id:{}", host, port, ec.what(), mId);
         return -1;
     }
     auto local_ep = mSock->local_endpoint();
@@ -47,14 +48,86 @@ int UdpTransport::getLocalPort()
     return mLocalPort;
 }
 
-void UdpTransport::do_read(char* data, int size, boost::asio::ip::udp::endpoint& ep, std::function<void(const boost::system::error_code& err, const size_t& bytes)> cb)
+void UdpTransport::setListener(weak_ptr<Listener> listener)
 {
-    std::lock_guard<mutex> l(mMutex);
-    mSock->async_receive_from(boost::asio::buffer(data, size), ep, cb);
+    mListener = listener;
 }
 
-void UdpTransport::do_write(char* data, int size, boost::asio::ip::udp::endpoint& ep, std::function<void(const boost::system::error_code& err, const size_t& bytes)> cb)
+void UdpTransport::read(shared_ptr<vector<char>> buff)
 {
     std::lock_guard<mutex> l(mMutex);
-    mSock->async_send_to(boost::asio::buffer(data, size), ep, cb);
+    auto epPtr = std::make_shared<boost::asio::ip::udp::endpoint>();
+    weak_ptr<UdpTransport> weak = shared_from_this();
+    auto cb = [weak, epPtr, this, buff](const boost::system::error_code& err, const size_t& bytes) {
+        auto self = weak.lock();
+        if (!self) {
+            return;
+        }
+        on_read(buff, *epPtr, err, bytes);
+    };
+    if (buff->empty()) {
+        buff->resize(2048);
+    }
+    mSock->async_receive_from(boost::asio::buffer(buff->data(), buff->size()), *epPtr, cb);
+}
+
+void UdpTransport::write(shared_ptr<vector<char>> buff, boost::asio::ip::udp::endpoint ep)
+{
+    std::lock_guard<mutex> l(mMutex);
+    if (mIsWrite) {
+        mPendingWrite.emplace_back(buff, ep);
+        return;
+    }
+    mIsWrite = true;
+    doWrite(buff, ep);
+}
+
+void UdpTransport::writePending()
+{
+    std::lock_guard<std::mutex> lock(mMutex);
+    if (mPendingWrite.empty()) {
+        mIsWrite = false;
+        return;
+    }
+    auto it = mPendingWrite.front();
+    mPendingWrite.pop_front();
+    doWrite(it.first, it.second);
+}
+
+void UdpTransport::doWrite(shared_ptr<vector<char>> buff, boost::asio::ip::udp::endpoint ep)
+{
+    weak_ptr<UdpTransport> weak = shared_from_this();
+    auto cb = [weak, this, ep, buff](const boost::system::error_code& err, const size_t& bytes) {
+        auto self = weak.lock();
+        if (!self) {
+            return;
+        }
+        on_write(buff, ep, err, bytes);
+    };
+    mSock->async_send_to(boost::asio::buffer(buff->data(), buff->size()), ep, cb);
+}
+
+void UdpTransport::on_read(shared_ptr<vector<char>> buff, boost::asio::ip::udp::endpoint ep, const boost::system::error_code& err, const size_t& bytes)
+{
+    if (err) {
+        ERRLN("on_read error:{} id:{}", err.what(), mId);
+    }
+    auto self = mListener.lock();
+    if (!self) {
+        return;
+    }
+    self->onRead(shared_from_this(), buff, ep, err, bytes);
+}
+
+void UdpTransport::on_write(shared_ptr<vector<char>> buff, boost::asio::ip::udp::endpoint ep, const boost::system::error_code& err, const size_t& bytes)
+{
+    if (err) {
+        ERRLN("on_write error:{} id:{}", err.what(), mId);
+    }
+    writePending();
+    auto self = mListener.lock();
+    if (!self) {
+        return;
+    }
+    self->onWrite(shared_from_this(), buff, ep, err, bytes);
 }
