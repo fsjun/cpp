@@ -26,6 +26,7 @@ TcpTransport::~TcpTransport()
 int TcpTransport::init(bool isClient, string local_host, int local_port, string remote_host, int remote_port)
 {
     if (isClient) {
+        mIsWrite = true;
         mSock = std::make_shared<boost::asio::ip::tcp::socket>(*mIoContext);
         if (local_port > 0) {
             boost::asio::ip::tcp::endpoint local_ep(boost::asio::ip::address::from_string(local_host), local_port);
@@ -106,6 +107,7 @@ void TcpTransport::on_connect(boost::system::error_code ec)
     if (ec) {
         ERRLN("on_connect error:{} id:{}", ec.what(), mId);
     }
+    writePending();
     auto self = mListener.lock();
     if (!self) {
         return;
@@ -251,6 +253,9 @@ void TcpTransport::on_read(shared_ptr<vector<char>> buff, const boost::system::e
     auto self = mListener.lock();
     if (!self) {
         return;
+    }
+    if (!err) {
+        buff->resize(bytes);
     }
     self->onRead(shared_from_this(), buff, err, bytes);
 }

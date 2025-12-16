@@ -116,6 +116,9 @@ void UdpTransport::on_read(shared_ptr<vector<char>> buff, boost::asio::ip::udp::
     if (!self) {
         return;
     }
+    if (!err) {
+        buff->resize(bytes);
+    }
     self->onRead(shared_from_this(), buff, ep, err, bytes);
 }
 
