@@ -7,19 +7,7 @@ TcpTransport::TcpTransport(shared_ptr<boost::asio::io_context>& ioc) : Transport
 
 TcpTransport::~TcpTransport()
 {
-    boost::system::error_code ec;
-    std::lock_guard<mutex> l(mMutex);
-    if (mSock) {
-        mSock->close(ec);
-        mSock.reset();
-    }
-    if (mAcceptor) {
-        mAcceptor->close(ec);
-        mAcceptor.reset();
-    }
-    if (mIoContext) {
-        mIoContext.reset();
-    }
+    close();
     INFOLN("TcpTransport destructor id:{}", mId);
 }
 
@@ -105,7 +93,9 @@ void TcpTransport::do_connect(string host, int port)
 void TcpTransport::on_connect(boost::system::error_code ec)
 {
     if (ec) {
-        ERRLN("on_connect error:{} id:{}", ec.what(), mId);
+        ERRLN("on_connect fail, error:{} id:{}", ec.what(), mId);
+    } else {
+        INFOLN("on_connect success, error:{} id:{}", ec.what(), mId);
     }
     writePending();
     auto self = mListener.lock();
@@ -220,6 +210,23 @@ void TcpTransport::write(shared_ptr<vector<char>> buff)
     doWrite(buff);
 }
 
+void TcpTransport::close()
+{
+    boost::system::error_code ec;
+    std::lock_guard<mutex> l(mMutex);
+    if (mSock) {
+        mSock->close(ec);
+        mSock.reset();
+    }
+    if (mAcceptor) {
+        mAcceptor->close(ec);
+        mAcceptor.reset();
+    }
+    if (mIoContext) {
+        mIoContext.reset();
+    } 
+}
+
 void TcpTransport::writePending()
 {
     std::lock_guard<std::mutex> lock(mMutex);
@@ -274,6 +281,9 @@ void TcpTransport::on_read_until(shared_ptr<vector<char>> buff, char delimiter, 
         std::string str;
         std::getline(is, str, delimiter);
         buff->assign(str.begin(), str.end());
+        if (!is.eof()) {
+            buff->emplace_back(delimiter);
+        }
     }
     self->onRead(shared_from_this(), buff, err, bytes);
 }

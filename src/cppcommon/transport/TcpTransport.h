@@ -23,6 +23,7 @@ public:
     void async_read_until(shared_ptr<vector<char>> buff, char delimiter);
     void do_write_some(shared_ptr<vector<char>> buff);
     void write(shared_ptr<vector<char>> buff);
+    void close();
 
 private:
     void writePending();

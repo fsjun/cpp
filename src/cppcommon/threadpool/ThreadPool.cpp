@@ -21,6 +21,7 @@ int ThreadPool::execute(function<void()> task)
 {
     std::lock_guard<mutex> l(mMutex);
     if (!mRunning) {
+        ERRLN("ThreadPool is not running.");
         return -1;
     }
     if (!mIdleThreads.empty()) {
@@ -46,5 +47,6 @@ int ThreadPool::execute(function<void()> task)
         thread->execute(task);
         return 0;
     }
+    ERRLN("ThreadPool is full, minSize:{} maxSzie:{} queueMaxSize:{}", mMinSize, mMaxSize, mQueueMaxSize);
     return -1;
 }

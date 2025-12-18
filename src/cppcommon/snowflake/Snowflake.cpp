@@ -10,7 +10,7 @@ Snowflake::Snowflake()
     int64_t workerId = u(e);
     int64_t datacenterId = u(e);
     mGenerator.init(workerId, datacenterId);
-    INFOLN("snowflake workerId:%ld datacenterId:%ld", workerId, datacenterId);
+    INFOLN("snowflake workerId:{} datacenterId:{}", workerId, datacenterId);
 }
 
 int64_t Snowflake::nextid()
