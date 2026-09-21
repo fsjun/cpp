@@ -110,7 +110,7 @@ std::vector<std::string> Tools::Split(std::string ss, char delim)
     return stu;
 }
 
-std::string Tools::Join(std::vector<std::string> vec, string delimiter)
+std::string Tools::Join(std::vector<std::string>& vec, string delimiter)
 {
     if (vec.empty()) {
         return "";
@@ -120,6 +120,49 @@ std::string Tools::Join(std::vector<std::string> vec, string delimiter)
         result += delimiter + vec[i];
     }
     return result;
+}
+
+std::string Tools::Join(std::vector<std::any>& vec, string delimiter)
+{
+    if (vec.empty()) {
+        return "";
+    }
+    std::string result = ToString(vec[0]);
+    for (size_t i = 1; i < vec.size(); ++i) {
+        result += delimiter + ToString(vec[i]);
+    }
+    return result;
+}
+
+std::string Tools::ToString(std::any& param)
+{
+    if (!param.has_value()) {
+        return "";
+    }
+    const std::type_info& type = param.type();
+    if (type == typeid(int))
+        return std::to_string(std::any_cast<int>(param));
+    if (type == typeid(long))
+        return std::to_string(std::any_cast<long>(param));
+    if (type == typeid(long long))
+        return std::to_string(std::any_cast<long long>(param));
+    if (type == typeid(unsigned int))
+        return std::to_string(std::any_cast<unsigned int>(param));
+    if (type == typeid(unsigned long))
+        return std::to_string(std::any_cast<unsigned long>(param));
+    if (type == typeid(float))
+        return std::to_string(std::any_cast<float>(param));
+    if (type == typeid(double))
+        return std::to_string(std::any_cast<double>(param));
+    if (type == typeid(bool))
+        return std::any_cast<bool>(param) ? "true" : "false";
+    if (type == typeid(char))
+        return std::string(1, std::any_cast<char>(param));
+    if (type == typeid(const char*))
+        return std::string(std::any_cast<const char*>(param));
+    if (type == typeid(std::string))
+        return std::any_cast<std::string>(param);
+    return "";
 }
 
 std::string Tools::UrlEncode(std::string url)

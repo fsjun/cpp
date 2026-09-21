@@ -15,7 +15,9 @@ public:
     static long Now();
     static long long NowMs();
     static std::vector<std::string> Split(std::string ss, char delim);
-    static std::string Join(std::vector<std::string> vec, string delimiter);
+    static std::string Join(std::vector<std::string>& vec, string delimiter);
+    static std::string Join(std::vector<std::any>& vec, string delimiter);
+    static std::string ToString(std::any& param);
     static std::string UrlEncode(std::string url);
     static std::string UrlDecode(std::string url);
 };
