@@ -110,6 +110,18 @@ std::vector<std::string> Tools::Split(std::string ss, char delim)
     return stu;
 }
 
+std::string Tools::Join(std::vector<std::string> vec, string delimiter)
+{
+    if (vec.empty()) {
+        return "";
+    }
+    std::string result = vec[0];
+    for (size_t i = 1; i < vec.size(); ++i) {
+        result += delimiter + vec[i];
+    }
+    return result;
+}
+
 std::string Tools::UrlEncode(std::string url)
 {
     ostringstream escaped;
